@@ -158,3 +158,37 @@ plt.title(f"Total Energetic Cost is {Energetic_Cost} J \n Gate Fidelity is {opt_
 plt.xlabel("Time (s)")
 plt.ylabel("Energetic Cost (J)")
 plt.show()
+
+colors = {0: "#70CEFF", 1: "#C756B2", 2: "#FDC357"}
+dashes = {"X": [10, 0], "Y": [2, 2, 10, 2], "Z": [6, 2]}
+
+def plot_optimal_pulses(hist, pulse_fn, ops, T, target_name):
+    _, profit_hist = list(zip(*hist))
+    fig, axs = plt.subplots(2, 1, figsize=(10, 9), gridspec_kw={"hspace": 0.0}, sharex=True)
+
+    max_params, max_profit = hist[jnp.argmax(jnp.array(profit_hist))]
+    plot_times = jnp.linspace(0, T, 300)
+    for p, op in zip(max_params, ops):
+        label = op.name
+        ax = axs[0] if isinstance(label, str) else axs[1]
+        if isinstance(label, str):
+            label = f"${label[-1]}_{op.wires[0]}$"
+            dash = dashes[label[1]]
+        else:
+            label = "$" + " ".join([f"{n[-1]}_{w}" for w, n in zip(op.wires, label)]) + "$"
+            dash = [10, 0]
+       
+        col = colors[op.wires[0]]
+        
+        values = [pulse_fn(p, t) for t in plot_times]
+        ax.plot(plot_times, values, label=label, dashes=dash, color=col)
+    ax.legend()
+    axs[0].legend(title="Single-qubit terms", ncol=int(jnp.sqrt(len(ops))))
+    axs[1].legend(title="Two-qubit terms")
+    title = f"{target_name}, Fidelity={max_profit:.6f}"
+    axs[0].set(ylabel=r"Pulse function $f(p, t)$", title=title)
+    axs[1].set(xlabel="Time $t$", ylabel=r"Pulse function $S_k(p, t)$")
+    plt.show()
+
+
+plot_optimal_pulses(hist, S_k, ops_param, T, target_name)
