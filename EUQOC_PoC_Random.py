@@ -75,14 +75,14 @@ T = 2 * jnp.pi
 timesteps = jnp.linspace(0, T, 1000)
 max_amp = 1.0
 
-amps = jnp.array([0.8, -0.5, 1, -3.0])
-times = jnp.array([0.2, 0.6, 1.2, 1.8, 2.1, 3.7, 4.9, 5.9])
+amps = jnp.array([-2.0, -1.0, 2.0, 3.0])
+times = jnp.array([0.2, 0.8, 1.0, 1.8, 2.0, 3.8, 4.0, 5.9])
 params = jnp.hstack([amps, times])
 PulseShape = Pulse(params,timesteps,max_amp=max_amp)
 plt.plot(timesteps, PulseShape)
-plt.xlabel('Time')
+plt.xlabel('Time (s)')
 plt.ylabel('Control Pulse Amplitude (V)')
-plt.title('Input Control Pulse (s)')
+plt.title('Input Control Pulse')
 plt.show()
 # Calculate Control Parameters
 
