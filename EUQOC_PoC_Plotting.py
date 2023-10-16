@@ -9,7 +9,7 @@ print("Random Pulse Fidelity is:, ", arb_profit_random, "Optimal Pulse Fidelity 
 
 plt.plot(timesteps, List_Random, label = "Random Pulse Energetic Cost", color = "red")
 plt.plot(timesteps, List_Optimal, label = "Optimal Pulse Energetic Cost", color = "green")
-plt.title(f"$F_O$ = {round(arb_profit_optimal, ndigits = 1)} %, $F_R$ is {round(arb_profit_random, ndigits = 1)} %, \n $E_O$ = {round(Energetic_Cost_Optimal, ndigits = 1)} a.u., $E_R$ = {round(Energetic_Cost_Random, ndigits = 1)} a.u.")
+plt.title(f"$F_O$ = {round(arb_profit_optimal*100, ndigits = 1)} %, $F_R$ is {round(arb_profit_random*100, ndigits = 1)} %, \n $E_O$ = {round(Energetic_Cost_Optimal, ndigits = 1)} a.u., $E_R$ = {round(Energetic_Cost_Random, ndigits = 1)} a.u.")
 plt.xlabel("Time t")
 plt.ylabel("Energetic Cost (a.u.)")
 plt.legend()
