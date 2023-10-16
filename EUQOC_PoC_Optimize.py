@@ -150,14 +150,16 @@ hist, opt_params, opt_profit = run_adam(profit, grad, params, learning_rate, num
 
 print(opt_params, opt_profit)
 
+""" Energetic Cost Plot
 Energetic_Cost, List = CalcEnergeticCost(H, opt_params, timesteps)
 print("The Energetic Cost is:", Energetic_Cost)
 
 plt.plot(timesteps, List)
 plt.title(f"Total Energetic Cost is {Energetic_Cost} J \n Gate Fidelity is {opt_profit*100} %")
-plt.xlabel("Time (s)")
-plt.ylabel("Energetic Cost (J)")
+plt.xlabel("Time t")
+plt.ylabel("Energetic Cost (a.u.)")
 plt.show()
+"""
 
 colors = {0: "#70CEFF", 1: "#C756B2", 2: "#FDC357"}
 dashes = {"X": [10, 0], "Y": [2, 2, 10, 2], "Z": [6, 2]}

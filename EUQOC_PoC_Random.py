@@ -80,7 +80,7 @@ times = jnp.array([0.2, 0.8, 1.0, 1.8, 2.0, 3.8, 4.0, 5.9])
 params = jnp.hstack([amps, times])
 PulseShape = Pulse(params,timesteps,max_amp=max_amp)
 plt.plot(timesteps, PulseShape)
-plt.xlabel('Time (s)')
+plt.xlabel('Time t')
 plt.ylabel('Control Pulse Amplitude (V)')
 plt.title('Input Control Pulse')
 plt.show()
@@ -124,10 +124,12 @@ print(f"Fidelity is: {arb_profit}")
 
 # Calculate Energetic Cost of Unitary 
 
+"""Energetic Cost Plot
 Energetic_Cost, List = CalcEnergeticCost(H, params, timesteps)
 print("The Energetic Cost is:", Energetic_Cost)
 plt.plot(timesteps, List)
 plt.title(f"Total Energetic Cost is {Energetic_Cost} J \n Gate Fidelity is {arb_profit*100} %")
-plt.xlabel("Time (s)")
-plt.ylabel("Energetic Cost (J)")
+plt.xlabel("Time t")
+plt.ylabel("Energetic Cost (a.u.)")
 plt.show()
+"""
