@@ -44,26 +44,24 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     Calculate Optimal Control Fields and Energetic Cost for the Hamiltonian operators in H_Control so that the unitary U_target is realized
 
     Parameters 
-
     ----------
 
-    U_Target : Target unitary evolution operator
+        U_Target : Target unitary evolution operator
 
-    H_Static : Static/Drift term of the Hamiltonian
+        H_Static : Static/Drift term of the Hamiltonian
 
-    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields
+        H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields
 
-    Iterations : Number of GRAPE iterations 
+        Iterations : Number of GRAPE iterations 
 
-    Timesteps : Number of timesteps 'N' for time discretization 
+        Timesteps : Number of timesteps 'N' for time discretization 
 
     Returns 
-
     ----------
 
-    Energetic_Cost : Energetic Cost of the gate using the optimized control fields 
+        Energetic_Cost : Energetic Cost of the gate using the optimized control fields 
 
-    Fidelity : Fidelity / overlap between the GRAPE optimized unitary after time 'T' and the target unitary 'U_target' 
+        Fidelity : Fidelity / overlap between the GRAPE optimized unitary after time 'T' and the target unitary 'U_target' 
 
     """
 
