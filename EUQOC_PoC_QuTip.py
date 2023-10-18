@@ -12,13 +12,13 @@ from qutip.ui.progressbar import TextProgressBar
 # Define total time 
 
 T = 2 * np.pi # Total evolution time
-times = np.linspace(0, T, 500) # Total time array in 500 timesteps
+times = np.linspace(0, T, 100) # Total time array in 500 timesteps
 
 # Define target unitary and Hamiltonian
 
 U_target = cnot()
 
-R = 500
+R = 10
 
 H_ops = [tensor(sigmax(), identity(2)),
          tensor(sigmay(), identity(2)),
@@ -51,7 +51,7 @@ u_limits = None
 
 alpha = None
 
-result = cy_grape_unitary(U_target, H0, H_ops, R, times, u_start=u0, u_limits=u_limits, eps=2*np.pi*1, alpha=alpha, phase_sensitive=False, progress_bar=TextProgressBar())
+result = cy_grape_unitary(U_target, H0, H_ops, R, times, u_limits=u_limits, eps=2*np.pi*1, alpha=alpha, phase_sensitive=False, progress_bar=TextProgressBar())
 
 # Plot Control Fields 
 
@@ -63,7 +63,7 @@ plt.show()
 print(_overlap(U_target, result.U_f).real, abs(_overlap(U_target, result.U_f)) ** 2)
 
 # Calculate and Plot Energetic Cost
-
+# Investigate what is the final R (best Fidelity)
 norm = np.linalg.norm(H0) + result.u[0,0]*np.linalg.norm(H_ops[0]) + result.u[0,1]*np.linalg.norm(H_ops[1]) + result.u[0,2]*np.linalg.norm(H_ops[2]) + result.u[0,3]*np.linalg.norm(H_ops[3]) + result.u[0,4]*np.linalg.norm(H_ops[4]) + result.u[0,5]*np.linalg.norm(H_ops[5]) + result.u[0,6]*np.linalg.norm(H_ops[6])
 
 energetic_cost = 0
@@ -80,3 +80,5 @@ plt.xlabel('Time t')
 plt.ylabel('Energetic Cost (a.u.)')
 plt.title('Energetic Cost over Time')
 plt.show()
+
+print(result.H_t)
