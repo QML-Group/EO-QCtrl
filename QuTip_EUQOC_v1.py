@@ -15,6 +15,8 @@ T = 2 * np.pi # Total gate time
 
 Iterations_1 = 10 # Total number of GRAPE iterations
 
+Timesteps = 500 # Total number of timesteps to discretize the time space
+
 H_Static_1 = 0 * np.pi * (tensor(sigmax(), identity(2))) + tensor(identity(2), sigmax()) # Static Drift Hamiltonian
 
 U_target_1 = cnot() # CNOT Gate 
@@ -73,7 +75,9 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field 
 
-    result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, R = Iterations, u_start = u0 , times = time, eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) # Run GRAPE Algorithm
+    result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, 
+                              R = Iterations, u_start = u0 , times = time, 
+                              eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) # Run GRAPE Algorithm
     
     Control_Fields = result.u # Store Control Fields 
 
@@ -81,8 +85,25 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     Fidelity = process_fidelity(U_Target, Final_Control_Fields) # Calculate Fidelity Between U_Target and U_f
 
-    print(f"Process Fidelity is: {Fidelity}")
+    print(f"Process Fidelity is: {Fidelity}") # Print Process Fidelity
 
-    pass 
+    stepsize = max(time)/len(time) # Define stepsize 
+    
+    Energetic_Cost = 0 # Initialize Energetic Cost Variable to 0 
+   
+    Energetic_Cost_List = [] # Initialiaze Energetic Cost List to empty
+    
+    # Calculate Energetic Cost of Entire Unitary (loop over every timestep and H_Control Terms)
+
+    for i in range(len(time)):
+        for j in range(len(H_Control)):
+            Energetic_Cost += Control_Fields[Iterations-1, j, i] * np.linalg.norm(H_Control[j]) * stepsize
+        Energetic_Cost += np.linalg.norm(H_Static) * stepsize
+        Energetic_Cost_List.append(Energetic_Cost) 
+
+    return Energetic_Cost, Fidelity
 
 
+EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_1, H_Static_1, H_Control_1, Iterations_1, Timesteps)
+
+print(f"Fidelity is {F_test}, Energetic Cost is {EC_test}")

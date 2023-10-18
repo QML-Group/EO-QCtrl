@@ -74,7 +74,6 @@ norm = np.linalg.norm(H0) + result.u[0,0]*np.linalg.norm(H_ops[0]) + result.u[0,
 energetic_cost = 0
 list = []
 timestep = max(times)/len(times)
-
 EC = 0
 List = []
 for i in range(len(times)):
