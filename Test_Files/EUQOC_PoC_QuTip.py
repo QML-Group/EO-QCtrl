@@ -12,7 +12,7 @@ from qutip.ui.progressbar import TextProgressBar
 # Define total time 
 
 T = 2 * np.pi # Total evolution time
-times = np.linspace(0, T, 100) # Total time array in 500 timesteps
+times = np.linspace(0, T, 500) # Total time array in 500 timesteps
 
 # Define target unitary and Hamiltonian
 
@@ -51,7 +51,7 @@ u_limits = None
 
 alpha = None
 
-result = cy_grape_unitary(U_target, H0, H_ops, R, times, u_limits=u_limits, eps=2*np.pi*1, alpha=alpha, phase_sensitive=False, progress_bar=TextProgressBar())
+result = cy_grape_unitary(U_target, H0, H_ops, R, times, u_limits=u_limits, u_start = u0 , eps=2*np.pi*1, alpha=alpha, phase_sensitive=False, progress_bar=TextProgressBar())
 
 # Plot Control Fields 
 
@@ -61,6 +61,9 @@ plt.show()
 # Calculate Fidelity 
 
 print(_overlap(U_target, result.U_f).real, abs(_overlap(U_target, result.U_f)) ** 2)
+
+test_fidelity = process_fidelity(U_target, result.U_f)
+print("Process Fidelity is:", test_fidelity)
 
 # Calculate and Plot Energetic Cost
 # Investigate what is the final R (best Fidelity)
@@ -81,4 +84,5 @@ plt.ylabel('Energetic Cost (a.u.)')
 plt.title('Energetic Cost over Time')
 plt.show()
 
-print(result.H_t)
+print(result.u[-1])
+print(result.U_f)
