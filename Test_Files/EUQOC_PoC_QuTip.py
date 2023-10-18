@@ -62,6 +62,8 @@ plt.show()
 
 print(_overlap(U_target, result.U_f).real, abs(_overlap(U_target, result.U_f)) ** 2)
 
+print(result.U_f)
+
 test_fidelity = process_fidelity(U_target, result.U_f)
 print("Process Fidelity is:", test_fidelity)
 
@@ -73,16 +75,27 @@ energetic_cost = 0
 list = []
 timestep = max(times)/len(times)
 
+EC = 0
+List = []
 for i in range(len(times)):
-    energetic_cost += norm[i]
-    list.append(energetic_cost*timestep)
+    for j in range(len(H_ops)):
+        EC += result.u[0, j, i] * np.linalg.norm(H_ops[j]) * timestep
+    EC += np.linalg.norm(H0) * timestep
+    List.append(EC)
 
+print(List)
 
-plt.plot(times, list)
+"""
+for i in range(len(times)):
+    energetic_cost += norm[i] * timestep
+    list.append(energetic_cost)
+
+print(energetic_cost, EC)
+"""
+
+plt.plot(times, List)
 plt.xlabel('Time t')
 plt.ylabel('Energetic Cost (a.u.)')
 plt.title('Energetic Cost over Time')
 plt.show()
 
-print(result.u[-1])
-print(result.U_f)
