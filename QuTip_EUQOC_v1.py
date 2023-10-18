@@ -9,7 +9,10 @@ from qutip.control.grape import plot_grape_control_fields, _overlap, grape_unita
 from scipy.interpolate import interp1d
 from qutip.ui.progressbar import TextProgressBar
 
-# Input Variables
+
+
+""" INPUT VARIABLES """
+
 
 T = 2 * np.pi # Total gate time
 
@@ -37,6 +40,12 @@ H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{yy}$',
             r'$u_{zz}$'
             ] # Labels for H_Control_1 (optional for plotting)
+
+
+
+""" FUNCTIONS """
+
+
 
 def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps):
 
@@ -100,6 +109,9 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         Energetic_Cost_List.append(Energetic_Cost) 
 
     return Energetic_Cost, Fidelity
+
+
+""" TESTING AND CALCULATIONS """
 
 
 EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_1, H_Static_1, H_Control_1, Iterations_1, Timesteps)
