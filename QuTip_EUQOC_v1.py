@@ -82,7 +82,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     u0 = np.array([np.random.rand(len(time)) * 2 * np.pi * 0.05 for _ in range(len(H_Control))]) # Initialize starting control field
 
-    u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] 
+    u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
 
     result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, 
                               R = Iterations, u_start = u0 , times = time, 
