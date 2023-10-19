@@ -16,7 +16,7 @@ from qutip.ui.progressbar import TextProgressBar
 
 T = 2 * np.pi # Total gate time
 
-Iterations_1 = 500 # Total number of GRAPE iterations
+Iterations_1 = 50 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
@@ -92,8 +92,6 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2
 
-    print(f"Process Fidelity is: {Fidelity}") # Print Process Fidelity
-
     stepsize = max(time)/len(time) # Define stepsize 
     
     Energetic_Cost = 0 # Initialize Energetic Cost Variable to 0 
@@ -116,4 +114,31 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
 EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, Timesteps)
 
-print(f"Fidelity is {F_test}, Energetic Cost is {EC_test}")
+Output = f"""
+
+**** PROGRAM OUTPUT & RESULTS ****
+
+----------
+
+    Random Quantum Unitary: 
+
+    {U_target_rand}
+
+    ----------
+
+    Optimal Fidelity: {F_test}
+
+    ----------
+
+    Energetic Cost: {EC_test}
+
+    ----------
+
+    Number of GRAPE Iterations: {Iterations_1}
+
+    ----------
+
+    Number of Timesteps: {Timesteps}
+"""
+
+print(Output)
