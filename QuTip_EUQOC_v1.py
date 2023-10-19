@@ -16,7 +16,7 @@ from qutip.ui.progressbar import TextProgressBar
 
 T = 2 * np.pi # Total gate time
 
-Iterations_1 = 50 # Total number of GRAPE iterations
+Iterations_1 = 500 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
@@ -102,7 +102,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     for i in range(len(time)):
         for j in range(len(H_Control)):
-            Energetic_Cost += Control_Fields[Iterations-1, j, i] * np.linalg.norm(H_Control[j]) * stepsize
+            Energetic_Cost += np.abs(Control_Fields[Iterations-1, j, i] * np.linalg.norm(H_Control[j])) * stepsize
         Energetic_Cost += np.linalg.norm(H_Static) * stepsize
         Energetic_Cost_List.append(Energetic_Cost) 
 
@@ -111,8 +111,39 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
 """ TESTING AND CALCULATIONS """
 
+GRAPE_Iterations = np.arange(10, 110, 10)
+Timestep_Iterations = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 300, 400, 500]
+print(Timestep_Iterations)
+EC_List = []
+F_List = []
 
-EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, Timesteps)
+for i in Timestep_Iterations:
+    EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, i)
+    EC_List.append(EC_test)
+    F_List.append(F_test)
+    print(EC_List)
+    print(F_List)
+
+fig, ax1 = plt.subplots()
+
+color = 'tab:red'
+ax1.set_xlabel('Number of Timestep Iterations')
+ax1.set_ylabel('Process Fidelity', color=color)
+lns1 = ax1.plot(Timestep_Iterations, F_List, color=color, label='Process Fidelity', linestyle = '-', marker = 'd')
+ax1.tick_params(axis='y', labelcolor=color)
+ax2 = ax1.twinx()  
+
+color = 'tab:blue'
+ax2.set_ylabel('Energetic Cost (a.u.)', color=color) 
+lns2 = ax2.plot(Timestep_Iterations, EC_List, color=color, label='Energetic Cost', linestyle = '-', marker = 'd')
+ax2.tick_params(axis='y', labelcolor=color)
+
+fig.tight_layout() 
+lns = lns1+lns2
+labs = [l.get_label() for l in lns]
+ax1.legend(lns, labs, loc=0)
+plt.title('Process Fidelity and Energetic Cost of Random Unitary versus GRAPE Iterations')
+plt.show()
 
 Output = f"""
 
@@ -140,5 +171,3 @@ Output = f"""
 
     Number of Timesteps: {Timesteps}
 """
-
-print(Output)
