@@ -108,6 +108,12 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     return Energetic_Cost, Fidelity
 
+def PlotControlFields(Timesteps, ControlFields, H_labels):
+
+    time = np.linspace(0, T, Timesteps) # Define total time space
+    fig = plot_grape_control_fields(time, ControlFields / (2 * np.pi), H_labels, uniform_axes=True)
+    plt.show()
+    
 
 """ TESTING AND CALCULATIONS """
 
