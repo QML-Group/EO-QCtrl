@@ -36,6 +36,14 @@ H_Control_1 =  [tensor(sigmax(), identity(2)),
          tensor(sigmay(), sigmay()) +
          tensor(sigmaz(), sigmaz())] # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
 
+H_Control_2 = [tensor(sigmax(), identity(2)),
+               tensor(sigmaz(), identity(2)),
+               tensor(identity(2), sigmax()),
+               tensor(identity(2), sigmaz()),
+               tensor(sigmax(), sigmax()) +
+               tensor(sigmaz(), sigmaz())]
+
+
 H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$',
             r'$u_{xx}$',
@@ -117,39 +125,7 @@ def PlotControlFields(Timesteps, ControlFields, H_labels):
 
 """ TESTING AND CALCULATIONS """
 
-GRAPE_Iterations = np.arange(10, 110, 10)
-Timestep_Iterations = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 300, 400, 500]
-print(Timestep_Iterations)
-EC_List = []
-F_List = []
-
-for i in Timestep_Iterations:
-    EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, i)
-    EC_List.append(EC_test)
-    F_List.append(F_test)
-    print(EC_List)
-    print(F_List)
-
-fig, ax1 = plt.subplots()
-
-color = 'tab:red'
-ax1.set_xlabel('Number of Timestep Iterations')
-ax1.set_ylabel('Process Fidelity', color=color)
-lns1 = ax1.plot(Timestep_Iterations, F_List, color=color, label='Process Fidelity', linestyle = '-', marker = 'd')
-ax1.tick_params(axis='y', labelcolor=color)
-ax2 = ax1.twinx()  
-
-color = 'tab:blue'
-ax2.set_ylabel('Energetic Cost (a.u.)', color=color) 
-lns2 = ax2.plot(Timestep_Iterations, EC_List, color=color, label='Energetic Cost', linestyle = '-', marker = 'd')
-ax2.tick_params(axis='y', labelcolor=color)
-
-fig.tight_layout() 
-lns = lns1+lns2
-labs = [l.get_label() for l in lns]
-ax1.legend(lns, labs, loc=0)
-plt.title('Process Fidelity and Energetic Cost of Random Unitary versus GRAPE Iterations')
-plt.show()
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps)
 
 Output = f"""
 
@@ -163,11 +139,11 @@ Output = f"""
 
     ----------
 
-    Optimal Fidelity: {F_test}
+    Optimal Fidelity: {F}
 
     ----------
 
-    Energetic Cost: {EC_test}
+    Energetic Cost: {EC}
 
     ----------
 
@@ -177,3 +153,39 @@ Output = f"""
 
     Number of Timesteps: {Timesteps}
 """
+
+print(Output)
+
+#GRAPE_Iterations = np.arange(10, 110, 10)
+#Timestep_Iterations = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 300, 400, 500]
+#print(Timestep_Iterations)
+#EC_List = []
+#F_List = []
+#
+#for i in Timestep_Iterations:
+#    EC_test, F_test = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, i)
+#    EC_List.append(EC_test)
+#   F_List.append(F_test)
+#    print(EC_List)
+#   print(F_List)
+#
+#fig, ax1 = plt.subplots()
+#
+#color = 'tab:red'
+#ax1.set_xlabel('Number of Timestep Iterations')
+#ax1.set_ylabel('Process Fidelity', color=color)
+#lns1 = ax1.plot(Timestep_Iterations, F_List, color=color, label='Process Fidelity', linestyle = '-', marker = 'd')
+#ax1.tick_params(axis='y', labelcolor=color)
+#ax2 = ax1.twinx()  
+#
+#color = 'tab:blue'
+#ax2.set_ylabel('Energetic Cost (a.u.)', color=color) 
+#lns2 = ax2.plot(Timestep_Iterations, EC_List, color=color, label='Energetic Cost', linestyle = '-', marker = 'd')
+#ax2.tick_params(axis='y', labelcolor=color)
+#
+#fig.tight_layout() 
+#lns = lns1+lns2
+#labs = [l.get_label() for l in lns]
+#ax1.legend(lns, labs, loc=0)
+#plt.title('Process Fidelity and Energetic Cost of Random Unitary versus GRAPE Iterations')
+#plt.show()
