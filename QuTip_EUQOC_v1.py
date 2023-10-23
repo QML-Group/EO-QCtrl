@@ -15,11 +15,13 @@ from qutip.ui.progressbar import TextProgressBar
 
 T = 2 * np.pi # Total gate time
 
-Iterations_1 = 50 # Total number of GRAPE iterations
+Iterations_1 = 100 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
-H_Static_1 = 0 * np.pi * (tensor(sigmax(), identity(2))) + tensor(identity(2), sigmax()) # Static Drift Hamiltonian
+H_Static_1 = 0 * np.pi * (tensor(sigmax(), identity(2)) + tensor(identity(2), sigmax())) # Static Drift Hamiltonian 1
+
+H_Static_2 = 0 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) # Static Drift Hamiltonian 2
 
 U_target_CNOT = cnot() # CNOT Gate 
 
@@ -35,12 +37,22 @@ H_Control_1 =  [tensor(sigmax(), identity(2)),
          tensor(sigmay(), sigmay()) +
          tensor(sigmaz(), sigmaz())] # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
 
-H_Control_2 = [tensor(sigmax(), identity(2)),
-               tensor(sigmaz(), identity(2)),
+H_Control_2 = [tensor(sigmaz(), identity(2)),
                tensor(identity(2), sigmax()),
+               tensor(identity(2), sigmay()),
                tensor(identity(2), sigmaz()),
-               tensor(sigmax(), sigmax()) +
-               tensor(sigmaz(), sigmaz())] # Control Hamiltonian 2: no sigma_y terms 
+               tensor(sigmaz(), sigmax())
+               ] # Control Hamiltonian 2: no sigma_y terms 
+
+H_Control_3 = [tensor(sigmax(), sigmax()), tensor(sigmay(), sigmay()), tensor(sigmaz(), sigmaz())]
+
+H_Control_4 = [tensor(sigmaz(), identity(2)), 
+               tensor(identity(2), sigmaz()),
+               tensor(sigmax(), identity(2)),
+               tensor(identity(2), sigmax()), 
+               tensor(sigmax(), sigmax()) + 
+               tensor(sigmay(), sigmay()) + 
+               tensor(sigmaz(), sigmaz())]
 
 H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$',
@@ -49,7 +61,11 @@ H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{zz}$'
             ] # Labels for H_Control_1 (optional for plotting)
 
-H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', r'$u_{2x}$', r'$u_{2z}$',  r'$u_{xx}$', r'$u_{zz}$']
+H_Labels_2 = [r'$u_{1z}$', r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$', r'$u_{zx}$']
+
+H_Labels_3 = [r'$u_{xx}$', r'$u_{yy}$', r'$u_{zz}$']
+
+H_Labels_4 = [r'$u_{1z}$', r'$u_{2z}$', r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$']
 
 
 """ FUNCTIONS """
@@ -144,12 +160,12 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         Energetic_Cost_List.append(Energetic_Cost) 
 
     return Energetic_Cost, Fidelity
-    
+
 
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True)
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_1, H_Control_1, Iterations_1, Timesteps, H_Labels_1, Plot_Control_Field = True, Plot_Tomography = True)
 
 Output = f"""
 
