@@ -16,7 +16,7 @@ from qutip.ui.progressbar import TextProgressBar
 
 T = 2 * np.pi # Total gate time
 
-Iterations_1 = 500 # Total number of GRAPE iterations
+Iterations_1 = 50 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
