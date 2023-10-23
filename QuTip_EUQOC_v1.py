@@ -10,7 +10,6 @@ from scipy.interpolate import interp1d
 from qutip.ui.progressbar import TextProgressBar
 
 
-
 """ INPUT VARIABLES """
 
 
@@ -43,7 +42,6 @@ H_Control_2 = [tensor(sigmax(), identity(2)),
                tensor(sigmax(), sigmax()) +
                tensor(sigmaz(), sigmaz())] # Control Hamiltonian 2: no sigma_y terms 
 
-
 H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$',
             r'$u_{xx}$',
@@ -54,9 +52,7 @@ H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
 H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', r'$u_{2x}$', r'$u_{2z}$',  r'$u_{xx}$', r'$u_{zz}$']
 
 
-
 """ FUNCTIONS """
-
 
 
 def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, Plot_Control_Field = False, Plot_Tomography = False):
@@ -151,6 +147,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     
 
 """ TESTING AND CALCULATIONS """
+
 
 EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True)
 
