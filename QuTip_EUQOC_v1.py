@@ -41,7 +41,7 @@ H_Control_2 = [tensor(sigmax(), identity(2)),
                tensor(identity(2), sigmax()),
                tensor(identity(2), sigmaz()),
                tensor(sigmax(), sigmax()) +
-               tensor(sigmaz(), sigmaz())]
+               tensor(sigmaz(), sigmaz())] # Control Hamiltonian 2: no sigma_y terms 
 
 
 H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
@@ -51,13 +51,15 @@ H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{zz}$'
             ] # Labels for H_Control_1 (optional for plotting)
 
+H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', r'$u_{2x}$', r'$u_{2z}$',  r'$u_{xx}$', r'$u_{zz}$']
+
 
 
 """ FUNCTIONS """
 
 
 
-def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps):
+def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, Plot_Control_Field = False, Plot_Tomography = False):
 
     """
     Calculate Optimal Control Fields and Energetic Cost for the Hamiltonian operators in H_Control so that the unitary U_target is realized
@@ -74,6 +76,12 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         Iterations : Number of GRAPE iterations 
 
         Timesteps : Number of timesteps 'N' for time discretization 
+
+        H_Labels : Labels for plotting control fields and process tomography
+
+        Plot_Control_Field : if True : Plot Control Fields 
+
+        Plot_Tomography : if True : Plot Tomography of Target Unitary and Final Unitary Gate after optimization
 
     Returns 
     ----------
@@ -98,6 +106,31 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     
     Control_Fields = result.u # Store Control Fields 
 
+    Final_Control_Fields = result.U_f # Store Final Control Fields 
+
+    if Plot_Control_Field == True: # Plot Control Fields if set to 'True'
+
+        plot_grape_control_fields(time, Control_Fields / (2 * np.pi), H_Labels, uniform_axes=True)
+        plt.show()
+
+    if Plot_Tomography == True: # Plot Process Tomography of Target and Final Untiarty if set to 'True'
+
+        op_basis = [[qeye(2), sigmax(), sigmay(), sigmaz()]] * 2
+        op_label = [["i", "x", "y", "z"]] * 2      
+        U_i_s = to_super(U_Target)
+        U_f_s = to_super(Final_Control_Fields)
+        chi_1 = qpt(U_i_s, op_basis)
+        chi_2 = qpt(U_f_s, op_basis)
+
+
+        fig_1 = plt.figure(figsize = (6,6))
+        fig_1 = qpt_plot_combined(chi_1, op_label, fig=fig_1, threshold=0.001, title = 'Target Unitary Gate ')
+
+        fig_2 = plt.figure(figsize = (6, 6))
+        fig_2 = qpt_plot_combined(chi_2, op_label, fig = fig_2, threshold = 0.001, title = 'Final Unitary after Optimization')
+
+        plt.show()
+       
     Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2
 
     stepsize = max(time)/len(time) # Define stepsize 
@@ -115,17 +148,11 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         Energetic_Cost_List.append(Energetic_Cost) 
 
     return Energetic_Cost, Fidelity
-
-def PlotControlFields(Timesteps, ControlFields, H_labels):
-
-    time = np.linspace(0, T, Timesteps) # Define total time space
-    fig = plot_grape_control_fields(time, ControlFields / (2 * np.pi), H_labels, uniform_axes=True)
-    plt.show()
     
 
 """ TESTING AND CALCULATIONS """
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps)
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True)
 
 Output = f"""
 
