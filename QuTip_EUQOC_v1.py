@@ -37,11 +37,12 @@ H_Control_1 =  [tensor(sigmax(), identity(2)),
          tensor(sigmay(), sigmay()) +
          tensor(sigmaz(), sigmaz())] # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
 
-H_Control_2 = [tensor(sigmaz(), identity(2)),
+H_Control_2 = [tensor(sigmax(), identity(2)),
+               tensor(sigmaz(), identity(2)),
                tensor(identity(2), sigmax()),
-               tensor(identity(2), sigmay()),
                tensor(identity(2), sigmaz()),
-               tensor(sigmaz(), sigmax())
+               tensor(sigmax(), sigmax()) +
+               tensor(sigmaz(), sigmaz())
                ] # Control Hamiltonian 2: no sigma_y terms 
 
 H_Control_3 = [tensor(sigmax(), sigmax()), 
@@ -63,7 +64,7 @@ H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
             r'$u_{zz}$'
             ] # Labels for H_Control_1 (optional for plotting)
 
-H_Labels_2 = [r'$u_{1z}$', r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$', r'$u_{zx}$']
+H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', r'$u_{2x}$', r'$u_{2z}$', r'$u_{xx}$', r'$u_{zz}$']
 
 H_Labels_3 = [r'$u_{xx}$', r'$u_{yy}$', r'$u_{zz}$']
 
@@ -167,7 +168,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_1, Iterations_1, Timesteps, H_Labels_1, Plot_Control_Field = True, Plot_Tomography = True)
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True)
 
 Output = f"""
 
