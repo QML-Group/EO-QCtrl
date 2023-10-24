@@ -15,13 +15,13 @@ from qutip.ui.progressbar import TextProgressBar
 
 T = 2 * np.pi # Total gate time
 
-Iterations_1 = 100 # Total number of GRAPE iterations
+Iterations_GRAPE = 100 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
-H_Static_1 = 0 * np.pi * (tensor(sigmax(), identity(2)) + tensor(identity(2), sigmax())) # Static Drift Hamiltonian 1
+H_Static_1 = 1 * np.pi * (tensor(sigmax(), identity(2)) + tensor(identity(2), sigmax())) # Static Drift Hamiltonian 1
 
-H_Static_2 = 0 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) # Static Drift Hamiltonian 2
+H_Static_2 = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 2 Inlcuding Interaction Term
 
 U_target_CNOT = cnot() # CNOT Gate 
 
@@ -64,6 +64,16 @@ H_Labels_3 = [r'$u_{xx}$', # Labels for H_Control_3 (optional for plotting)
               r'$u_{yy}$', 
               r'$u_{zz}$'] 
 
+H_Control_4 = [tensor(sigmax(), identity(2)), # Control Hamiltonian 2: no Y and Z terms
+               tensor(identity(2), sigmax()),
+               tensor(sigmax(), sigmax()) +
+               tensor(sigmaz(), sigmaz()) 
+               ] 
+
+H_Labels_4 = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
+              r'$u_{2x}$', 
+              r'$u_{xx}$',
+              r'$u_{zz}$'] 
 
 """ FUNCTIONS """
 
@@ -162,7 +172,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_2, H_Control_4, Iterations_GRAPE, Timesteps, H_Labels_4, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
 
 # Store Results in Speific Output Format
 Output = f""" 
@@ -185,7 +195,7 @@ Output = f"""
 
     ----------
 
-    Number of GRAPE Iterations: {Iterations_1}
+    Number of GRAPE Iterations: {Iterations_GRAPE}
 
     ----------
 
