@@ -27,7 +27,7 @@ U_target_CNOT = cnot() # CNOT Gate
 
 U_target_rand = rand_unitary(4) # Generate Random Unitary 
 
-H_Control_1 =  [tensor(sigmax(), identity(2)), 
+H_Control_1 =  [tensor(sigmax(), identity(2)), # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
          tensor(sigmay(), identity(2)),
          tensor(sigmaz(), identity(2)),
          tensor(identity(2), sigmax()),
@@ -35,40 +35,34 @@ H_Control_1 =  [tensor(sigmax(), identity(2)),
          tensor(identity(2), sigmaz()),
          tensor(sigmax(), sigmax()) +
          tensor(sigmay(), sigmay()) +
-         tensor(sigmaz(), sigmaz())] # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
+         tensor(sigmaz(), sigmaz())] 
 
-H_Control_2 = [tensor(sigmax(), identity(2)),
+H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$', # Labels for H_Control_1 (optional for plotting)
+            r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$',
+            r'$u_{xx}$',
+            r'$u_{yy}$',
+            r'$u_{zz}$'
+            ] 
+
+H_Control_2 = [tensor(sigmax(), identity(2)), # Control Hamiltonian 2: no Y terms 
                tensor(sigmaz(), identity(2)),
                tensor(identity(2), sigmax()),
                tensor(identity(2), sigmaz()),
                tensor(sigmax(), sigmax()) +
                tensor(sigmaz(), sigmaz())
-               ] # Control Hamiltonian 2: no sigma_y terms 
+               ] 
 
-H_Control_3 = [tensor(sigmax(), sigmax()), 
+H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', # Labels for H_Control_2 (optional for plotting)
+              r'$u_{2x}$', r'$u_{2z}$', 
+              r'$u_{xx}$', r'$u_{zz}$'] 
+
+H_Control_3 = [tensor(sigmax(), sigmax()), # Control Hamiltonian 3: No single qubit terms
                tensor(sigmay(), sigmay()), 
                tensor(sigmaz(), sigmaz())]
 
-H_Control_4 = [tensor(sigmaz(), identity(2)), 
-               tensor(identity(2), sigmaz()),
-               tensor(sigmax(), identity(2)),
-               tensor(identity(2), sigmax()), 
-               tensor(sigmax(), sigmax()) + 
-               tensor(sigmay(), sigmay()) + 
-               tensor(sigmaz(), sigmaz())]
-
-H_Labels_1 = [r'$u_{1x}$', r'$u_{1y}$', r'$u_{1z}$',
-            r'$u_{2x}$', r'$u_{2y}$', r'$u_{2z}$',
-            r'$u_{xx}$',
-            r'$u_{yy}$',
-            r'$u_{zz}$'
-            ] # Labels for H_Control_1 (optional for plotting)
-
-H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', r'$u_{2x}$', r'$u_{2z}$', r'$u_{xx}$', r'$u_{zz}$']
-
-H_Labels_3 = [r'$u_{xx}$', r'$u_{yy}$', r'$u_{zz}$']
-
-H_Labels_4 = [r'$u_{1z}$', r'$u_{2z}$', r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$']
+H_Labels_3 = [r'$u_{xx}$', # Labels for H_Control_3 (optional for plotting)
+              r'$u_{yy}$', 
+              r'$u_{zz}$'] 
 
 
 """ FUNCTIONS """
@@ -115,9 +109,9 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
 
-    result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, 
+    result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                               R = Iterations, u_start = u0 , times = time, 
-                              eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) # Run GRAPE Algorithm
+                              eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) 
     
     Control_Fields = result.u # Store Control Fields 
 
@@ -131,7 +125,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     if Plot_Tomography == True: # Plot Process Tomography of Target and Final Untiarty if set to 'True'
 
         op_basis = [[qeye(2), sigmax(), sigmay(), sigmaz()]] * 2
-        op_label = [["i", "x", "y", "z"]] * 2      
+        op_label = [["I", "X", "Y", "Z"]] * 2      
         U_i_s = to_super(U_Target)
         U_f_s = to_super(Final_Control_Fields)
         chi_1 = qpt(U_i_s, op_basis)
@@ -146,7 +140,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
         plt.show()
        
-    Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2
+    Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2 # Compute Fidelity (absolute overlap squared)
 
     stepsize = max(time)/len(time) # Define stepsize 
     
@@ -168,9 +162,10 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True)
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_1, H_Control_2, Iterations_1, Timesteps, H_Labels_2, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
 
-Output = f"""
+# Store Results in Speific Output Format
+Output = f""" 
 
 **** PROGRAM OUTPUT & RESULTS ****
 
@@ -197,8 +192,10 @@ Output = f"""
     Number of Timesteps: {Timesteps}
 """
 
+#Print Output
 print(Output)
 
+# Code for plotting Fidelity and Energetic Cost versus # of Timesteps & Number of GRAPE iterations
 #%%
 #GRAPE_Iterations = np.arange(10, 110, 10)
 #Timestep_Iterations = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 300, 400, 500]
