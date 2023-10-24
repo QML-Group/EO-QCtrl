@@ -66,14 +66,12 @@ H_Labels_3 = [r'$u_{xx}$', # Labels for H_Control_3 (optional for plotting)
 
 H_Control_4 = [tensor(sigmax(), identity(2)), # Control Hamiltonian 2: no Y and Z terms
                tensor(identity(2), sigmax()),
-               tensor(sigmax(), sigmax()) +
-               tensor(sigmaz(), sigmaz()) 
+               tensor(sigmax(), sigmax())
                ] 
 
 H_Labels_4 = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
               r'$u_{2x}$', 
-              r'$u_{xx}$',
-              r'$u_{zz}$'] 
+              r'$u_{xx}$'] 
 
 """ FUNCTIONS """
 
