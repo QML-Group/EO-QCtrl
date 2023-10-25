@@ -5,6 +5,7 @@ from qutip import *
 from qutip.control import *
 from qutip.qip.operations import cnot
 from qutip.qip.operations import cphase
+from qutip.qip.operations import swap
 from qutip.control.grape import plot_grape_control_fields, _overlap, grape_unitary_adaptive, cy_grape_unitary
 from scipy.interpolate import interp1d
 from qutip.ui.progressbar import TextProgressBar
@@ -24,6 +25,8 @@ H_Static_1 = 1 * np.pi * (tensor(sigmax(), identity(2)) + tensor(identity(2), si
 H_Static_2 = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 2 Inlcuding Interaction Term
 
 U_target_CNOT = cnot() # CNOT Gate 
+
+U_target_SWAP = swap() # SWAP Gate
 
 U_target_rand = rand_unitary(4) # Generate Random Unitary 
 
@@ -170,7 +173,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, H_Control_4, Iterations_GRAPE, Timesteps, H_Labels_4, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_2, H_Control_4, Iterations_GRAPE, Timesteps, H_Labels_4, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
 
 # Store Results in Speific Output Format
 Output = f""" 
