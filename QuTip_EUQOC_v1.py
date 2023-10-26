@@ -121,7 +121,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
 
     result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
-                              R = Iterations, u_start = None , times = time, 
+                              R = Iterations, u_start = None, times = time, 
                               eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) 
     
     Control_Fields = result.u # Store Control Fields 
@@ -173,7 +173,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 """ TESTING AND CALCULATIONS """
 
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_2, H_Control_4, Iterations_GRAPE, Timesteps, H_Labels_4, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_rand, H_Static_2, H_Control_4, Iterations_GRAPE, Timesteps, H_Labels_3, Plot_Control_Field = True, Plot_Tomography = True) # Run algorithm with set of initial parameters
 
 # Store Results in Speific Output Format
 Output = f""" 
