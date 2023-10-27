@@ -76,6 +76,7 @@ H_Labels_4 = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
               r'$u_{2x}$', 
               r'$u_{xx}$'] 
 
+
 """ FUNCTIONS """
 
 
