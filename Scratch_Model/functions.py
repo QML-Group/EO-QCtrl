@@ -124,7 +124,7 @@ def Calculate_Fidelity(U_Target, U):
 
    
 
-def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps):
+def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
 
     """
     Calculate Energetic Cost of certain Unitary 
@@ -140,13 +140,24 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps):
 
     Timesteps : Number of timesteps 'N' for time discretization
 
+    Total_Time : Total time of unitary gate
+
     Returns 
     ----------
 
     EC : Energetic Cost of the Control Pulses based on the static and drift Hamiltonian 
     """
 
-    pass
+    EC = 0
+
+    stepsize = Total_Time / Timesteps
+
+    for i in range(Timesteps):
+        for j in range(len(H_Control)):
+            EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * stepsize
+        EC += np.linalg.norm(H_Static) * stepsize 
+    
+    return EC
 
 def Calculate_Cost_Function(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
 
