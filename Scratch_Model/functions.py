@@ -71,6 +71,108 @@ def rand_unitary(N):
 
     return y
 
+def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
+
+    """
+    Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
+
+    Parameters
+    ----------
+
+    H_Static : Static/Drift Hamiltonian Term
+
+    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+    Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    Timesteps : Number of timesteps 'N for time discretization
+
+    Total_Time : Total Unitary Gate Time
+
+    Returns 
+    ----------
+
+    U : Unitary Gate based on input parameters 
+
+    """
+
+
+    pass
+
+def Calculate_Fidelity(U_Target, U):
+
+    """
+    Calculate Fidelity Between Target Unitary and other Unitary U
+
+    Parameters 
+    ----------
+
+    U_Target : Target Unitary Gate 
+
+    U: Unitary Gate to Calculate Fidelity of 
+
+    Returns 
+    ----------
+
+    F: Fidelity between U_Target and U
+
+    """
+
+    pass
+
+def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps):
+
+    """
+    Calculate Energetic Cost of certain Unitary 
+
+    Parameters
+    ----------
+
+    Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    H_Static : Static/Drift Hamiltonian Term 
+
+    H_Control : Control Hamiltonoian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+    Timesteps : Number of timesteps 'N' for time discretization
+
+    Returns 
+    ----------
+
+    EC : Energetic Cost of the Control Pulses based on the static and drift Hamiltonian 
+    """
+
+    pass
+
+def Calculate_Cost_Function(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
+
+    """
+    Calculate Cost Function of certain control pulses 
+
+
+    Parameters 
+    ----------
+
+    Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    H_Static : Static/Drift Hamiltonian Term 
+
+    H_Control : Control Hamiltonoian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+    Timesteps : Number of timesteps 'N' for time discretization
+
+    Total_Time : Total Unitary Gate Time
+
+    Returns 
+    ----------
+
+    C: Value of the cost-function based on the control pulses provided as input
+
+    """
+
+
+    pass
+
 def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
 
     """
