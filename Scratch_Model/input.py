@@ -6,6 +6,10 @@ from functions import *
 This File Contains Inputs that are used in the "main.py" file to calculate and simulate
 Quantum Optimal Control problems in python
 
+-----------------
+
+Work in Progress
+
 """
 
 T = 2 * np.pi # Total gate time

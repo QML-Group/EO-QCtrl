@@ -7,6 +7,10 @@ from scipy.stats import unitary_group
 This File Contains Functions that are used in the "input.py" and "main.py" files to calculate and simulate
 Quantum Optimal Control problems in python
 
+-----------------
+
+Work in Progress
+
 """
 
 def tensor(a, b):
