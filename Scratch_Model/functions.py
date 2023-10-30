@@ -92,12 +92,26 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
     Returns 
     ----------
 
-    U : Unitary Gate based on input parameters 
+    Unitary_Total : Unitary Gate based on input parameters 
 
     """
+    time = np.linspace(0, Total_Time, Timesteps)
+    dt = Total_Time/Timesteps
+    H_Total = 0
+    U_Total = []
 
+    for i in range(len(time)):
+        for j in range(len(H_Control)):
+            H_Total = H_Static
+            H_Total += Control_Pulses[j, i] * H_Control[j]
+        
+        U = np.exp(-1*j*H_Total*dt)
+        U_Total.append(U)
+    
 
-    pass
+    Unitary_Total = np.prod(U_Total)
+
+    return Unitary_Total
 
 def Calculate_Fidelity(U_Target, U):
 

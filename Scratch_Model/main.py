@@ -13,4 +13,3 @@ using NumPy in Python
 Work in Progress
 
 """
-
