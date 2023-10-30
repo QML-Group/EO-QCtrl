@@ -118,7 +118,11 @@ def Calculate_Fidelity(U_Target, U):
 
     """
 
-    pass
+    F = abs(np.trace(U_Target.conj().T @ U)/np.trace(U_Target.conj().T @ U_Target))**2
+
+    return F
+
+   
 
 def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps):
 
@@ -207,3 +211,4 @@ def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_St
     times = np.linspace(0, Total_Time, Timesteps) # Define Total Time Space 
 
     pass 
+
