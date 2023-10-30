@@ -67,7 +67,7 @@ def rand_unitary(N):
 
     return y
 
-def GRAPE(U_Target, H_Static, H_Control, Iterations, Timesteps, U_Start = None):
+def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
 
     """
     This Function Implements the GRAPE (Gradient Ascent Pulse Engineering) Algorithm using NumPy in Python
@@ -84,6 +84,8 @@ def GRAPE(U_Target, H_Static, H_Control, Iterations, Timesteps, U_Start = None):
 
     Iterations : Number of GRAPE iterations 
 
+    Total_Time : Total Unitary Gate Time
+
     Timesteps : Number of timesteps 'N' for time discretization
 
     U_Start : Optional array with initial control pulse values
@@ -96,5 +98,6 @@ def GRAPE(U_Target, H_Static, H_Control, Iterations, Timesteps, U_Start = None):
 
     """
 
-    
+    times = np.linspace(0, Total_Time, Timesteps) # Define Total Time Space 
+
     pass 
