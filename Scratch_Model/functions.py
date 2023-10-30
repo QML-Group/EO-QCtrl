@@ -122,8 +122,6 @@ def Calculate_Fidelity(U_Target, U):
 
     return F
 
-   
-
 def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
 
     """
@@ -159,7 +157,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     
     return EC
 
-def Calculate_Cost_Function(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
+def Calculate_Cost_Function(Control_Pulses, Weight_Fidelity, Weight_EC, U_Target, H_Static, H_Control, Timesteps, Total_Time):
 
     """
     Calculate Cost Function of certain control pulses 
@@ -169,6 +167,12 @@ def Calculate_Cost_Function(Control_Pulses, H_Static, H_Control, Timesteps, Tota
     ----------
 
     Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    Weight_Fidelity: Weight given to "Fidelity" in Cost Function
+
+    Weight_EC: Weight given to "Energetic Cost" in Cost Function
+
+    U_Target : Target Unitary 
 
     H_Static : Static/Drift Hamiltonian Term 
 
@@ -185,8 +189,17 @@ def Calculate_Cost_Function(Control_Pulses, H_Static, H_Control, Timesteps, Tota
 
     """
 
+    U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary 
 
-    pass
+    Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
+
+    EC_Normalized = Energetic_Cost/100
+
+    Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
+
+    Cost_Function = (Weight_Fidelity * Fidelity) + (Weight_EC * EC_Normalized)
+
+    return Cost_Function
 
 def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
 
