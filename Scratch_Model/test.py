@@ -16,7 +16,6 @@ N = len(time)
 K = len(H_Control_4)
 u_start = np.ones((K, N))*0.1
 
-
 Unitary = Calculate_Unitary(H_Static_1, H_Control_4, u_start, NumberOfTimesteps, T)
 print(Unitary)
 
