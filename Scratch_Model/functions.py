@@ -162,13 +162,13 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     """
 
     EC = 0
-
-    stepsize = Total_Time / Timesteps
+    time = np.linspace(0, Total_Time, Timesteps)
+    dt = time[1] - time[0]
 
     for i in range(Timesteps):
         for j in range(len(H_Control)):
-            EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * stepsize
-        EC += np.linalg.norm(H_Static) * stepsize 
+            EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
+        EC += np.linalg.norm(H_Static) * dt
     
     return EC
 
