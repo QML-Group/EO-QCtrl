@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.linalg import expm
 from scipy.stats import unitary_group
 
 """
@@ -105,7 +106,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
             H_Total = H_Static
             H_Total += Control_Pulses[j, i] * H_Control[j]
         
-        U = np.exp(-1*j*H_Total*dt)
+        U = expm(-1*j*H_Total*dt)
         U_Total.append(U)
     
 
@@ -215,10 +216,10 @@ def Calculate_Cost_Function(Control_Pulses, Weight_Fidelity, Weight_EC, U_Target
 
     return Cost_Function
 
-def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
+def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
 
     """
-    This Function Implements the GRAPE (Gradient Ascent Pulse Engineering) Algorithm using NumPy in Python
+    This Function Implements an Optimization algorithmn using NumPy and SciPy in Python
     Calculates control pulses for the Hamitonian operators in H_Control so that the unitary U_Target is realized.
 
     Parameters 
@@ -248,5 +249,13 @@ def GRAPE(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_St
 
     times = np.linspace(0, Total_Time, Timesteps) # Define Total Time Space 
 
-    pass 
+    N = len(times)
+    K = len(H_Control)
 
+    u = np.zeros((K, N))
+
+    u_limits = [-1, +1]
+
+    u_start = None
+
+    pass
