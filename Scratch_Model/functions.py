@@ -105,12 +105,12 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
         for j in range(len(H_Control)):
             H_Total = H_Static
             H_Total += Control_Pulses[j, i] * H_Control[j]
-        
         U = expm(-1*j*H_Total*dt)
         U_Total.append(U)
     
-
-    Unitary_Total = np.prod(U_Total)
+    Unitary_Total = 1
+    for x in U_Total:
+        Unitary_Total = Unitary_Total * x
 
     return Unitary_Total
 
