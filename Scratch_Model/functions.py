@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import expm
 from scipy.stats import unitary_group
+from scipy.optimize import minimize
+
 
 """
 
@@ -97,20 +99,23 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
 
     """
     time = np.linspace(0, Total_Time, Timesteps)
-    dt = time[1] - time[0]
+    
     H_Total = 0
     U_Total = []
 
-    for i in range(len(time)):
+    for i in range(Timesteps-1):
+        dt = time[i+1] - time[i]
         for j in range(len(H_Control)):
             H_Total = H_Static
-            H_Total += Control_Pulses[j, i] * H_Control[j]
+            H_Total += Control_Pulses[j * len(H_Control) + i] * H_Control[j]
+            #H_Total += Control_Pulses[i*Timesteps + j] * H_Control[j]
+            #H_Total += Control_Pulses[j, i] * H_Control[j]
         U = expm(-1j*H_Total*dt)
         U_Total.append(U)
     
     Unitary_Total = 1
     for x in U_Total:
-        Unitary_Total = Unitary_Total * x
+        Unitary_Total = x * Unitary_Total 
 
     return Unitary_Total
 
@@ -163,11 +168,13 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
 
     EC = 0
     time = np.linspace(0, Total_Time, Timesteps)
-    dt = time[1] - time[0]
 
-    for i in range(Timesteps):
+    for i in range(Timesteps-1):
+        dt = time[i+1] - time[i]
         for j in range(len(H_Control)):
-            EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
+            EC += np.abs(Control_Pulses[j * len(H_Control) + i] * np.linalg.norm(H_Control[j])) * dt
+            #EC += np.abs(Control_Pulses[i*Timesteps + j] * np.linalg.norm(H_Control[j])) * dt
+            #EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
         EC += np.linalg.norm(H_Static) * dt
     
     return EC
@@ -208,11 +215,11 @@ def Calculate_Cost_Function(Control_Pulses, Weight_Fidelity, Weight_EC, U_Target
 
     Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
 
-    EC_Normalized = Energetic_Cost/100
+    EC_Normalized = Energetic_Cost/(Total_Time*1) # Include Bound of norm of Hamiltonian
 
     Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
 
-    Cost_Function = (Weight_Fidelity * Fidelity) + (Weight_EC * EC_Normalized)
+    Cost_Function = (Weight_Fidelity * (1 - Fidelity)) + (Weight_EC * EC_Normalized)
 
     return Cost_Function
 
@@ -247,15 +254,63 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
 
     """
 
+    Weight_Fidelity = 1
+    Weight_EC = 0
+
+    def Calculate_Cost_Function(Control_Pulses):
+
+        """
+        Calculate Cost Function of certain control pulses 
+
+
+        Parameters 
+        ----------
+
+        Control_Pulses : The Control Parameters for each term in "H_Control"
+
+        Weight_Fidelity: Weight given to "Fidelity" in Cost Function
+
+        Weight_EC: Weight given to "Energetic Cost" in Cost Function
+
+        U_Target : Target Unitary 
+
+        H_Static : Static/Drift Hamiltonian Term 
+
+        H_Control : Control Hamiltonoian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+        Timesteps : Number of timesteps 'N' for time discretization
+
+        Total_Time : Total Unitary Gate Time
+
+        Returns 
+        ----------
+
+        C: Value of the cost-function based on the control pulses provided as input
+
+        """
+        #print(Control_Pulses)
+
+        U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary 
+
+        Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
+
+        EC_Normalized = Energetic_Cost/(Total_Time*1) # Include Bound of norm of Hamiltonian
+
+        Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
+
+        Cost_Function = (Weight_Fidelity * (1 - Fidelity)) + (Weight_EC * EC_Normalized)
+
+        return Cost_Function
+    
+
     times = np.linspace(0, Total_Time, Timesteps) # Define Total Time Space 
 
     N = len(times)
     K = len(H_Control)
-
     u = np.zeros((K, N))
 
-    u_limits = [-1, +1]
+    result = minimize(Calculate_Cost_Function, u, method = 'COBYLA', options={'maxiter' : 1000})
+    
+    return result['fun'], result['x'] 
 
-    u_start = None
 
-    pass
