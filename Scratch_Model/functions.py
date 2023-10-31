@@ -97,7 +97,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
 
     """
     time = np.linspace(0, Total_Time, Timesteps)
-    dt = Total_Time/Timesteps
+    dt = time[1] - time[0]
     H_Total = 0
     U_Total = []
 
@@ -105,7 +105,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
         for j in range(len(H_Control)):
             H_Total = H_Static
             H_Total += Control_Pulses[j, i] * H_Control[j]
-        U = expm(-1*j*H_Total*dt)
+        U = expm(-1j*H_Total*dt)
         U_Total.append(U)
     
     Unitary_Total = 1
