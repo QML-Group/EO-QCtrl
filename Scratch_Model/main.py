@@ -13,8 +13,8 @@ using NumPy in Python
 Work in Progress
 
 """
-time = np.linspace(0, T, 20)
-Cost, Opt_Params = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_4, 1, T, 20)
+time = np.linspace(0, T, 18)
+Cost, Opt_Params = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_4, 1, T, 18)
 print('Fidelity is', Cost)
 plt.plot(time, Opt_Params[0])
 plt.plot(time, Opt_Params[1])

@@ -309,7 +309,7 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
     K = len(H_Control)
     u = np.zeros((K, N))
 
-    result = minimize(Calculate_Cost_Function, u, method = 'COBYLA', options={'maxiter' : 1000})
+    result = minimize(Calculate_Cost_Function, u, method = 'COBYLA', options = {'maxiter' : 500})
     
     return result['fun'], result['x'] 
 
