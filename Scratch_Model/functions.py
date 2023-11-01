@@ -54,7 +54,7 @@ def sigmaz():
     """
 
     return np.array([[1, 0],
-                     [0, 1]])
+                     [0, -1]])
 
 def cnot():
     """
@@ -100,7 +100,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
     Unitary_Total : Unitary Gate based on input parameters 
 
     """
-    time = np.linspace(0, Total_Time, Timesteps)
+    time = np.linspace(0, Total_Time, Timesteps+1)
     
     H_Total = 0
     U_Total = []
@@ -168,7 +168,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     """
 
     EC = 0
-    time = np.linspace(0, Total_Time, Timesteps)
+    time = np.linspace(0, Total_Time, Timesteps+1)
 
     for i in range(Timesteps-1):
         dt = time[i+1] - time[i]
@@ -212,6 +212,8 @@ def Calculate_Cost_Function(Control_Pulses, Weight_Fidelity, Weight_EC, U_Target
     """
 
     U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary 
+
+    print(U_Final)
 
     Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
 
@@ -302,11 +304,11 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
         return Cost_Function
     
 
-    times = np.linspace(0, Total_Time, Timesteps) # Define Total Time Space 
+    times = np.linspace(0, Total_Time, Timesteps+1) # Define Total Time Space 
 
     N = len(times)
     K = len(H_Control)
-    u = np.zeros((K, N))
+    #u = np.zeros((K, N))
   
     result = minimize(Calculate_Cost_Function, u, method = 'COBYLA', bounds = Bounds(lb = -1, ub = 1))
     
