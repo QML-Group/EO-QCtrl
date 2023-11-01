@@ -63,6 +63,8 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     Final_Control_Fields = result.U_f # Store Final Control Fields 
 
+    print(Control_Fields[Iterations-1])
+
     if Plot_Control_Field == True: # Plot Control Fields if set to 'True'
 
         plot_grape_control_fields(time, Control_Fields / (2 * np.pi), H_Labels, uniform_axes=True)
