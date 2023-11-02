@@ -107,8 +107,8 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
 
     for i in range(Timesteps-1):
         dt = time[i+1] - time[i]
+        H_Total = H_Static
         for j in range(len(H_Control)):
-            H_Total = H_Static
             #H_Total += Control_Pulses[j * len(H_Control) + i] * H_Control[j]
             H_Total += Control_Pulses[j, i] * H_Control[j]
         U = expm(-1j*H_Total*dt)

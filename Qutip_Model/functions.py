@@ -49,11 +49,15 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     time = np.linspace(0, T, Timesteps) # Define total time space
 
-    eps = 2 * np.pi * 1 # Termination value
+    # print(len(time),Timesteps)
 
-    u0 = np.array([np.random.rand(len(time)) * 2 * np.pi * 0.05 for _ in range(len(H_Control))]) # Initialize starting control field
+    eps = 2 * np.pi / T # Termination value
 
-    u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
+    # u0 = np.array([np.random.rand(len(time)) * 2 * np.pi * 0.05 for _ in range(len(H_Control))]) # Initialize starting control field
+
+    print(time)
+
+    # u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
 
     result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                               R = Iterations, u_start = None, times = time, 
@@ -63,12 +67,15 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     Final_Control_Fields = result.U_f # Store Final Control Fields 
 
-    print(Control_Fields[Iterations-1])
+    # print('First iter:\n',Control_Fields[0])
+
+    # print('Last iter:\n',Control_Fields[Iterations-1])
 
     if Plot_Control_Field == True: # Plot Control Fields if set to 'True'
 
-        plot_grape_control_fields(time, Control_Fields / (2 * np.pi), H_Labels, uniform_axes=True)
+        plot_grape_control_fields(time, Control_Fields/ (2 * np.pi), H_Labels, uniform_axes=True)
         plt.show()
+    
 
     if Plot_Tomography == True: # Plot Process Tomography of Target and Final Untiarty if set to 'True'
 

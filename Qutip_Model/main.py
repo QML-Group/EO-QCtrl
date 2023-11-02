@@ -13,6 +13,9 @@ using built in functions from QuTip
 
 """
 
+print(U_target_CNOT)
+exit()
+
 EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
                                            H_Control_4, Iterations_GRAPE, 
                                            Timesteps, H_Labels_4, 

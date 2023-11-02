@@ -16,9 +16,9 @@ T = 2 * np.pi # Total gate time
 
 Iterations_GRAPE = 100 # Total number of GRAPE iterations
 
-Timesteps = 500 # Total number of timesteps to discretize the time space
+Timesteps = 100 # Total number of timesteps to discretize the time space
 
-H_Static_1 = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
+H_Static_1 = 2 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * 2 * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
 
 U_Target_CNOT = cnot()
 
