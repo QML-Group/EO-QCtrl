@@ -30,11 +30,10 @@ U_F = Calculate_Unitary(H_Static_1, H_Control_4, u, 100, T)
 
 print(U_F)
 print(U_Target_CNOT)
-
 print("Fidelity is", Calculate_Fidelity(U_Target_CNOT, U_F))
 
-test = Calculate_Cost_Function(u, 1, 0, U_Target_CNOT, H_Static_1, H_Control_4, 100, T)
-print(test)
+#test = Calculate_Cost_Function(u, 1, 0, U_Target_CNOT, H_Static_1, H_Control_4, 100, T)
+#print(test)
 
 
 
