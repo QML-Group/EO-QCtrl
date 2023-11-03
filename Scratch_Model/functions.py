@@ -109,8 +109,8 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
         dt = time[i+1] - time[i]
         H_Total = H_Static
         for j in range(len(H_Control)):
-            #H_Total += Control_Pulses[j * len(H_Control) + i] * H_Control[j]
-            H_Total += Control_Pulses[j, i] * H_Control[j]
+            H_Total += Control_Pulses[i*len(H_Control) + j] * H_Control[j]
+            #H_Total += Control_Pulses[j, i] * H_Control[j]
         U = expm(-1j*H_Total*dt)
         U_Total.append(U)
     
@@ -118,7 +118,29 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
     for x in U_Total:
         Unitary_Total = x @ Unitary_Total
 
+    print("Final Unitary is", Unitary_Total)
+
     return Unitary_Total
+
+def Calculate_Unitary_2(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
+
+
+    time = np.linspace(0, Total_Time, Timesteps)
+    H_Total = 0
+    U = np.eye(4,4)
+    dt = time[1] - time[0]
+
+    for i in range(Timesteps-1):
+        H_Total += H_Static
+        for j in range(len(H_Control)):
+            H_Total += Control_Pulses[i * len(H_Control) + j] * H_Control[j]
+            #H_Total += Control_Pulses[j, i] * H_Control[j]
+    
+
+    U = expm(-1j * dt * H_Total)
+    
+    return U
+
 
 def Calculate_Fidelity(U_Target, U):
 
@@ -173,8 +195,8 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     for i in range(Timesteps-1):
         dt = time[i+1] - time[i]
         for j in range(len(H_Control)):
-            #EC += np.abs(Control_Pulses[j * len(H_Control) + i] * np.linalg.norm(H_Control[j])) * dt
-            EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
+            EC += np.abs(Control_Pulses[i*len(H_Control) + j] * np.linalg.norm(H_Control[j])) * dt
+            #EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
         EC += np.linalg.norm(H_Static) * dt
     
     return EC
@@ -309,8 +331,9 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
     N = len(times)
     K = len(H_Control)
     u = np.zeros((K, N))
+ 
   
-    result = minimize(Calculate_Cost_Function, u, method = 'COBYLA', bounds = Bounds(lb = -1, ub = 1))
+    result = minimize(Calculate_Cost_Function, u, method = 'Nelder-Mead')
     
     return result['fun'], result['x'] 
 
