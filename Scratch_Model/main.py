@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from functions import *
 from input import *
 import random as rd
+import time
 
 """ 
 
@@ -17,11 +18,15 @@ Work in Progress
 
 # Run Optimization Code
 
+start_time = time.time()
+
 T = 2 * np.pi
-steps = 100
+steps = 50
 TimeSpace = np.linspace(0, T, steps)
 
 ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps, 'Nelder-Mead')
+
+print("Total time is:", time.time() - start_time, "seconds")
 
 print("Fidelity is",  1 - ErrorRate)
 print("Optimal Control Pulses are:", ControlPulses)
@@ -41,3 +46,5 @@ for i in range(len(H_Control_5)):
 
 plt.subplot_tool()
 plt.show()
+
+

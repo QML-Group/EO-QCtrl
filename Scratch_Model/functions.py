@@ -4,6 +4,7 @@ from scipy.linalg import expm
 from scipy.stats import unitary_group
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
+from scipy.optimize import basinhopping
 import random as rd
 
 
@@ -301,14 +302,9 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
     u = np.zeros((K * N))
 
     result = minimize(Calculate_Cost_Function, u, method = Optimization_Method)
+    #result = basinhopping(Calculate_Cost_Function, u)
 
-    if Optimization_Method == 'COBYLA':
-
-        Final_Unitary = Calculate_Unitary_Manual(H_Static, H_Control, result['x'], Timesteps, Total_Time)
-    
-    if Optimization_Method == 'Nelder-Mead':
-
-        Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
+    Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
 
     return result['fun'], result['x'], Final_Unitary 
 
