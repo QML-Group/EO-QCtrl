@@ -100,6 +100,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
     Unitary_Total : Unitary Gate based on input parameters 
 
     """
+
     time = np.linspace(0, Total_Time, Timesteps+1)
     
     H_Total = 0
@@ -118,29 +119,51 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
     for x in U_Total:
         Unitary_Total = x @ Unitary_Total
 
-    print("Final Unitary is", Unitary_Total)
-
     return Unitary_Total
 
-def Calculate_Unitary_2(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
+def Calculate_Unitary_Manual(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
 
+    """
+    Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
 
-    time = np.linspace(0, Total_Time, Timesteps)
+    Parameters
+    ----------
+
+    H_Static : Static/Drift Hamiltonian Term
+
+    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+    Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    Timesteps : Number of timesteps 'N for time discretization
+
+    Total_Time : Total Unitary Gate Time
+
+    Returns 
+    ----------
+
+    Unitary_Total : Unitary Gate based on input parameters 
+
+    """
+
+    time = np.linspace(0, Total_Time, Timesteps+1)
+    
     H_Total = 0
-    U = np.eye(4,4)
-    dt = time[1] - time[0]
+    U_Total = []
 
     for i in range(Timesteps-1):
-        H_Total += H_Static
+        dt = time[i+1] - time[i]
+        H_Total = H_Static
         for j in range(len(H_Control)):
-            H_Total += Control_Pulses[i * len(H_Control) + j] * H_Control[j]
-            #H_Total += Control_Pulses[j, i] * H_Control[j]
+            H_Total += Control_Pulses[j, i] * H_Control[j]
+        U = expm(-1j*H_Total*dt)
+        U_Total.append(U)
     
+    Unitary_Total = np.eye(4,4)
+    for x in U_Total:
+        Unitary_Total = x @ Unitary_Total
 
-    U = expm(-1j * dt * H_Total)
-    
-    return U
-
+    return Unitary_Total
 
 def Calculate_Fidelity(U_Target, U):
 
@@ -201,53 +224,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     
     return EC
 
-def Calculate_Cost_Function(Control_Pulses, Weight_Fidelity, Weight_EC, U_Target, H_Static, H_Control, Timesteps, Total_Time):
-
-    """
-    Calculate Cost Function of certain control pulses 
-
-
-    Parameters 
-    ----------
-
-    Control_Pulses : The Control Parameters for each term in "H_Control"
-
-    Weight_Fidelity: Weight given to "Fidelity" in Cost Function
-
-    Weight_EC: Weight given to "Energetic Cost" in Cost Function
-
-    U_Target : Target Unitary 
-
-    H_Static : Static/Drift Hamiltonian Term 
-
-    H_Control : Control Hamiltonoian containing operators that can be tuned in the Hamiltonian via the control fields 
-
-    Timesteps : Number of timesteps 'N' for time discretization
-
-    Total_Time : Total Unitary Gate Time
-
-    Returns 
-    ----------
-
-    C: Value of the cost-function based on the control pulses provided as input
-
-    """
-
-    U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary 
-
-    print(U_Final)
-
-    Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
-
-    EC_Normalized = Energetic_Cost/(Total_Time*1) # Include Bound of norm of Hamiltonian
-
-    Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
-
-    Cost_Function = (Weight_Fidelity * (1 - Fidelity)) + (Weight_EC * EC_Normalized)
-
-    return Cost_Function
-
-def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timesteps, U_Start = None):
+def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps):
 
     """
     This Function Implements an Optimization algorithmn using NumPy and SciPy in Python
@@ -277,9 +254,6 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
     TBD
 
     """
-
-    Weight_Fidelity = 1
-    Weight_EC = 0
 
     def Calculate_Cost_Function(Control_Pulses):
 
@@ -313,17 +287,13 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
 
         """
 
-        U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary 
-        
-        Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time) # Calculate Energetic Cost of Unitary
-
-        EC_Normalized = Energetic_Cost/(Total_Time*1) # Include Bound of norm of Hamiltonian
+        U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary g
 
         Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
 
-        Cost_Function = Weight_Fidelity * (1- Fidelity) + Weight_EC * EC_Normalized
+        Error_Rate = 1 - Fidelity
 
-        return Cost_Function
+        return Error_Rate
     
 
     times = np.linspace(0, Total_Time, Timesteps+1) # Define Total Time Space 
@@ -334,7 +304,9 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Iterations, Total_Time, Timeste
  
   
     result = minimize(Calculate_Cost_Function, u, method = 'Nelder-Mead')
+
+    Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
     
-    return result['fun'], result['x'] 
+    return result['fun'], result['x'], Final_Unitary 
 
 
