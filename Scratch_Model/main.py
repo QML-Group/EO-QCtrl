@@ -21,7 +21,7 @@ Work in Progress
 T = 2 * np.pi
 steps = 50
 
-ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps)
+ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps, 'Nelder-Mead')
 
 print("Fidelity is",  1 - ErrorRate)
 print("Optimal Control Pulses are:", ControlPulses)

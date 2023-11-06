@@ -224,7 +224,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     
     return EC
 
-def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps):
+def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method):
 
     """
     This Function Implements an Optimization algorithmn using NumPy and SciPy in Python
@@ -303,7 +303,7 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps):
     u = np.zeros((K, N))
  
   
-    result = minimize(Calculate_Cost_Function, u, method = 'Nelder-Mead')
+    result = minimize(Calculate_Cost_Function, u, method = Optimization_Method)
 
     Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
     
