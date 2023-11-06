@@ -184,8 +184,9 @@ def Calculate_Fidelity(U_Target, U):
     """
 
     F = abs(np.trace(U_Target.conj().T @ U)/np.trace(U_Target.conj().T @ U_Target))**2
+    Error_Rate = 1- F
     
-    return F
+    return Error_Rate 
 
 def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
 
@@ -288,11 +289,9 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
 
         U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary g
 
-        Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
+        Error = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
 
-        Error_Rate = 1 - Fidelity
-
-        return Error_Rate
+        return Error
     
 
     times = np.linspace(0, Total_Time, Timesteps+1) # Define Total Time Space 
