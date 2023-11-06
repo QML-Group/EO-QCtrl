@@ -110,8 +110,7 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
         dt = time[i+1] - time[i]
         H_Total = H_Static
         for j in range(len(H_Control)):
-            H_Total += Control_Pulses[i*len(H_Control) + j] * H_Control[j]
-            #H_Total += Control_Pulses[j, i] * H_Control[j]
+                H_Total += Control_Pulses[i*len(H_Control) + j] * H_Control[j] # (H_1(t = 0), H_2(t=0), H_1(t=1), ...)
         U = expm(-1j*H_Total*dt)
         U_Total.append(U)
     
@@ -300,13 +299,18 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
 
     N = len(times)
     K = len(H_Control)
-    u = np.zeros((K, N))
- 
-  
+    u = np.zeros((K * N))
+
     result = minimize(Calculate_Cost_Function, u, method = Optimization_Method)
 
-    Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
+    if Optimization_Method == 'COBYLA':
+
+        Final_Unitary = Calculate_Unitary_Manual(H_Static, H_Control, result['x'], Timesteps, Total_Time)
     
+    if Optimization_Method == 'Nelder-Mead':
+
+        Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
+
     return result['fun'], result['x'], Final_Unitary 
 
 

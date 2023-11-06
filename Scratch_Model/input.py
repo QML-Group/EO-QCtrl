@@ -48,7 +48,6 @@ H_Labels_2 = [r'$u_{1x}$', r'$u_{1z}$', # Labels for H_Control_2 (optional for p
               r'$u_{xx}$', r'$u_{zz}$'] 
 
 H_Control_3 = [tensor(sigmax(), sigmax()), # Control Hamiltonian 3: No single qubit terms
-               tensor(sigmay(), sigmay()), 
                tensor(sigmaz(), sigmaz())]
 
 H_Labels_3 = [r'$u_{xx}$', # Labels for H_Control_3 (optional for plotting)

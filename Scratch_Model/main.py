@@ -26,8 +26,3 @@ ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1
 print("Fidelity is",  1 - ErrorRate)
 print("Optimal Control Pulses are:", ControlPulses)
 print("Final Unitary is:", FinalUnitary)
-
-
-
-
-
