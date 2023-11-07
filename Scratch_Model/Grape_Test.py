@@ -47,8 +47,8 @@ import scipy.sparse as sp
 from qutip.qobj import Qobj
 from qutip.ui.progressbar import BaseProgressBar
 #from qutip.control.cy_grape import cy_overlap, cy_grape_inner
-from qutip.qip.gates import gate_sequence_product
 
+from qutip.qip.operations import gate_sequence_product
 import qutip.logging_utils
 logger = qutip.logging_utils.get_logger()
 from qutip import *
@@ -470,7 +470,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, eps=None, u_start=None,
 
     if u_limits:
         warnings.warn("Causion: Using experimental feature u_limits")
-
+        
     if u_limits and u_start:
         # make sure that no values in u0 violates the u_limits conditions
         u_start = np.array(u_start)
