@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from qutip import *
-from qutip.control import *
-from qutip.control.grape import plot_grape_control_fields, _overlap, grape_unitary_adaptive, cy_grape_unitary
+#from qutip.control import *
+#from qutip.control.grape import plot_grape_control_fields, _overlap, grape_unitary_adaptive, cy_grape_unitary
+#from qutip.control.grape import _overlap
+from Grape_Test import *
 from qutip.ui.progressbar import TextProgressBar
 from input import *
 
@@ -13,6 +15,9 @@ using the built-in QuTip optimal control suite and functions
 
 
 """
+
+def _overlap(A, B):
+    return (A.dag() * B).tr() / A.shape[0]
 
 def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, Plot_Control_Field = False, Plot_Tomography = False):
 
@@ -89,7 +94,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         plt.show()
        
     Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2 # Compute Fidelity (absolute overlap squared)
-
+    
     stepsize = max(time)/len(time) # Define stepsize 
     
     Energetic_Cost = 0 # Initialize Energetic Cost Variable to 0 
