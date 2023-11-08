@@ -33,6 +33,7 @@ class GRAPEResult:
         self.U_f = U_f
 
 def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
+    
     """
     Perform one iteration of GRAPE control pulse
     updates.
@@ -75,7 +76,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, alpha, bet
     eps : float
         The distance to move along the gradient when updating
         the controls.
-        
+
     Result
     ------
     The results are stored in u[r + 1, : , :].
