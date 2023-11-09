@@ -19,7 +19,7 @@ using the built-in QuTip optimal control suite and functions
 def _overlap(A, B):
     return (A.dag() * B).tr() / A.shape[0]
 
-def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, Plot_Control_Field = False, Plot_Tomography = False):
+def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, weight_ec, Plot_Control_Field = False, Plot_Tomography = False):
 
     """
     Calculate Optimal Control Fields and Energetic Cost for the Hamiltonian operators in H_Control so that the unitary U_target is realized
@@ -62,7 +62,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                               R = Iterations, u_start = None, times = time, 
-                              eps = eps, phase_sensitive=False, progress_bar=TextProgressBar()) 
+                              eps = eps, weight_ec = weight_ec, phase_sensitive=False, progress_bar=TextProgressBar()) 
     
     Control_Fields = result.u # Store Control Fields 
 

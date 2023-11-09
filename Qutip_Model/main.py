@@ -15,8 +15,8 @@ using built in functions from QuTip
 
 EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
                                            H_Control_4, Iterations_GRAPE, 
-                                           Timesteps, H_Labels_4, 
-                                           Plot_Control_Field = False, Plot_Tomography = False) 
+                                           Timesteps, H_Labels_4, weight_ec = 0.5,
+                                           Plot_Control_Field = True, Plot_Tomography = False) 
 
 Output = f"""  
 

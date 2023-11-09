@@ -14,9 +14,9 @@ using the built-in QuTip optimal control suite and functions
 
 T = 2 * np.pi # Total gate time
 
-Iterations_GRAPE = 100 # Total number of GRAPE iterations
+Iterations_GRAPE = 500 # Total number of GRAPE iterations
 
-Timesteps = 100 # Total number of timesteps to discretize the time space
+Timesteps = 500 # Total number of timesteps to discretize the time space
 
 H_Static_1 = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) # Static Drift Hamiltonian 1
 
