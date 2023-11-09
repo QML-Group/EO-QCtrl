@@ -32,7 +32,7 @@ class GRAPEResult:
         self.H_t = H_t
         self.U_f = U_f
 
-def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
+def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec, weight_fidelity, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
     
     """
     Perform one iteration of GRAPE control pulse
@@ -88,7 +88,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
         for j in range(J): # Loop over all control fields 
             Q = 1j * dt * H_ops[j] @ U_f_list[m] # Forward propagator storing (i * dt * )
             
-            du = -2 * cy_overlap(P, Q) * cy_overlap(U_f_list[m], P) # Calculate Gradient 
+            du = -2 * weight_fidelity * cy_overlap(P, Q) * cy_overlap(U_f_list[m], P) # Calculate Gradient 
 
             du += -2 * weight_ec * u[r, j, m] * dt
 
@@ -97,7 +97,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2]
 
-def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, eps=None, u_start=None,
+def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=None, u_start=None,
                      u_limits=None, interp_kind='linear', use_interp=False,
                      alpha=None, beta=None, phase_sensitive=True,
                      progress_bar=BaseProgressBar()):
@@ -141,7 +141,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, eps=None, u_start=None,
             U_b = U_list[M - 2 - n].T.conj().tocsr() * U_b # Backward propagator 
 
         cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
-                       dt, eps, weight_ec, alpha_val, beta_val, phase_sensitive,
+                       dt, eps, weight_ec, weight_fidelity, alpha_val, beta_val, phase_sensitive,
                        use_u_limits, u_min, u_max)
 
     H_td_func = [H0] + [[H_ops[j], u[-1, j, :]] for j in range(J)] # Store total Hamiltonian over time 

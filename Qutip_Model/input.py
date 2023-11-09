@@ -14,7 +14,7 @@ using the built-in QuTip optimal control suite and functions
 
 T = 2 * np.pi # Total gate time
 
-Iterations_GRAPE = 500 # Total number of GRAPE iterations
+Iterations_GRAPE = 100 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 
@@ -74,3 +74,16 @@ H_Labels_4 = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
               r'$u_{2x}$', 
               r'$u_{xx}$'] 
 
+H_Control_5 = [tensor(sigmax(), identity(2)), # Control Hamiltonian 5: full control without Y-control
+               tensor(sigmaz(), identity(2)),
+               tensor(identity(2), sigmax()),
+               tensor(identity(2), sigmaz()),
+               tensor(sigmax(), sigmax()),
+               tensor(sigmax(), sigmaz()),
+               tensor(sigmaz(), sigmax()),
+               tensor(sigmaz(), sigmaz())]
+
+H_Labels_5 = [r'$u_{1x}$', r'$u_{1z}$',
+              r'$u_{2x}$', r'$u_{2z}$',
+              r'$u_{xx}$', r'$u_{xz}$',
+              r'$u_{zx}$', r'$u_{zz}$']
