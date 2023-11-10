@@ -213,7 +213,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     EC : Energetic Cost of the Control Pulses based on the static and drift Hamiltonian 
     """
 
-    EC = 0
+    H_T = 0
     time = np.linspace(0, Total_Time, Timesteps+1)
 
     NormalizeValue = Total_Time * (np.linalg.norm(H_Static) + np.sum(np.linalg.norm(H_Control)))
@@ -221,9 +221,10 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     for i in range(Timesteps-1):
         dt = time[i+1] - time[i]
         for j in range(len(H_Control)):
-            EC += np.abs(Control_Pulses[i*len(H_Control) + j] * np.linalg.norm(H_Control[j])) * dt
+            H_T += np.abs(Control_Pulses[i*len(H_Control) + j] * H_Control[j]) * dt
             #EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
-        EC += np.linalg.norm(H_Static) * dt
+        H_T += H_Static * dt
+        EC = np.linalg.norm(H_T)
     
     EC_Normalized = EC / NormalizeValue
     
@@ -309,6 +310,9 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
     #result = basinhopping(Calculate_Cost_Function, u)
 
     Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
+
+    Energetic_Cost = CalculateEnergeticCost(result['x'], H_Static, H_Control, Timesteps, Total_Time)
+    print("Energetic Cost is:", Energetic_Cost)
 
     return result['fun'], result['x'], Final_Unitary 
 

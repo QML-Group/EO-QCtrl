@@ -86,4 +86,4 @@ H_Control_5 = [tensor(sigmax(), identity(2)), # Control Hamiltonian 5: full cont
 H_Labels_5 = [r'$u_{1x}$', r'$u_{1z}$',
               r'$u_{2x}$', r'$u_{2z}$',
               r'$u_{xx}$', r'$u_{xz}$',
-              r'$u_{zx}$', r'$u_{zz}$']
+              r'$u_{zx}$', r'$u_{zz}$'] 

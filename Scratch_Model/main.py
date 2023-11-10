@@ -21,7 +21,7 @@ Work in Progress
 start_time = time.time()
 
 T = 2 * np.pi
-steps = 50
+steps = 5
 TimeSpace = np.linspace(0, T, steps)
 
 ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps, 'Nelder-Mead')
