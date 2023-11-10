@@ -230,7 +230,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     
     return EC_Normalized
 
-def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method):
+def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
 
     """
     This Function Implements an Optimization algorithmn using NumPy and SciPy in Python
@@ -297,7 +297,11 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
 
         Error = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
 
-        return Error
+        Energetic_Cost = CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time)
+
+        Cost_Function = Weight_EC * Energetic_Cost + Weight_F * Error 
+
+        return Cost_Function
     
 
     times = np.linspace(0, Total_Time, Timesteps+1) # Define Total Time Space 
