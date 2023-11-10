@@ -13,11 +13,15 @@ using built in functions from QuTip
 
 """
 
-#EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
-#                                           H_Control_5, Iterations_GRAPE, 
-#                                           Timesteps, H_Labels_5, 
-#                                           weight_ec = 0.0, weight_fidelity= 1.0,
-#                                           Plot_Control_Field = True, Plot_Tomography = False) 
+#### Run Optimziation ####
+
+EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
+                                           H_Control_5, Iterations_GRAPE, 
+                                           Timesteps, H_Labels_5, 
+                                           weight_ec = 0.2, weight_fidelity= 0.8,
+                                           Plot_Control_Field = True, Plot_Tomography = True) 
+
+#### Plot Pareto Front ####
 
 Weights = np.arange(1, step = 0.1)
 EnergeticCost = []
@@ -42,6 +46,8 @@ plt.title('Energetic Cost versus Infidelity')
 plt.grid()
 plt.show()
 
+#### Plot Fidelity & EC as function of Weights ####
+
 #plt.plot(Weights, Error_Rate, label = 'Infidelity')
 #plt.plot(Weights, EnergeticCost_Normalized, label = 'Normalized Energetic Cost')
 #plt.xlabel('Weight Energetic Cost')
@@ -52,8 +58,8 @@ plt.show()
 #plt.show()
 
 
-"""
-Output = f  
+
+Output = f"""  
 
 **** PROGRAM OUTPUT & RESULTS ****
 
@@ -80,4 +86,4 @@ Output = f
     Number of Timesteps: {Timesteps}
 """
 
-#print(Output) #Print Output
+print(Output) #Print Output
