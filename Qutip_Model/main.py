@@ -15,11 +15,11 @@ using built in functions from QuTip
 
 #### Run Optimziation ####
 
-EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
-                                           H_Control_5, Iterations_GRAPE, 
-                                           Timesteps, H_Labels_5, 
-                                           weight_ec = 0.2, weight_fidelity= 0.8,
-                                           Plot_Control_Field = True, Plot_Tomography = True) 
+#EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
+#                                           H_Control_5, Iterations_GRAPE, 
+#                                           Timesteps, H_Labels_5, 
+#                                           weight_ec = 0.0, weight_fidelity= 1.0,
+#                                           Plot_Control_Field = True, Plot_Tomography = True) 
 
 #### Plot Pareto Front ####
 
@@ -29,8 +29,8 @@ Fidelity = []
 
 for i in Weights:
     EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2,
-                                                                            H_Control_5, Iterations_GRAPE,
-                                                                            Timesteps, H_Labels_5,
+                                                                            H_Control_4, Iterations_GRAPE,
+                                                                            Timesteps, H_Labels_4,
                                                                             weight_ec = i, weight_fidelity = 1-i,
                                                                             Plot_Control_Field = False, Plot_Tomography = False)
     EnergeticCost.append(EnergeticCost_i_j)
