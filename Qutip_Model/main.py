@@ -23,7 +23,7 @@ using built in functions from QuTip
 
 #### Plot Pareto Front ####
 
-Weights = np.arange(1, step = 0.05)
+Weights = np.arange(1, step = 0.1)
 EnergeticCost = []
 Fidelity = []
 
@@ -31,7 +31,7 @@ for i in Weights:
     EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2,
                                                                             H_Control_4, Iterations_GRAPE,
                                                                             Timesteps, H_Labels_4,
-                                                                            weight_ec = i, weight_fidelity = 1-i,
+                                                                            weight_ec = i, weight_fidelity = 1,
                                                                             Plot_Control_Field = False, Plot_Tomography = False)
     EnergeticCost.append(EnergeticCost_i_j)
     Fidelity.append(Fidelity_i_j)
