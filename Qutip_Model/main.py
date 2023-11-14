@@ -23,7 +23,7 @@ using built in functions from QuTip
 
 #### Plot Pareto Front ####
 
-Weights = np.arange(1, step = 0.1)
+Weights = np.arange(1, step = 0.05)
 EnergeticCost = []
 Fidelity = []
 

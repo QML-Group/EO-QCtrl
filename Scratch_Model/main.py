@@ -24,7 +24,7 @@ T = 2 * np.pi
 steps = 50
 TimeSpace = np.linspace(0, T, steps)
 
-ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps, 'Nelder-Mead', Weight_F = 0.2 , Weight_EC = 0.8)
+ErrorRate, ControlPulses, FinalUnitary = Run_Optimizer(U_Target_CNOT, H_Static_1, H_Control_5, T, steps, 'Nelder-Mead', Weight_F = 0.8 , Weight_EC = 0.2)
 
 print("Total time is:", time.time() - start_time, "seconds")
 
