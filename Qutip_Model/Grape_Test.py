@@ -90,7 +90,9 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
             
             du = -2 * weight_fidelity * cy_overlap(P, Q) * cy_overlap(U_f_list[m], P) # Calculate Gradient Fidelity
 
-            du += -(np.sqrt(7)/3) * weight_ec * dt * (u[r, j, m] / ((3*np.pi/2 + u[r, 0, m]**2 + u[r, 1, m]**2 + u[r, 2, m]**2)))  # Calculate Gradient Energetic Cost
+            #du += -(np.sqrt(7)/3) * weight_ec * dt * (u[r, j, m] / ((3*np.pi/2 + u[r, 0, m]**2 + u[r, 1, m]**2 + u[r, 2, m]**2)))  # Calculate Gradient Energetic Cost
+
+            du += -2 * weight_ec * dt * u[r, j, m] * (H_Control[j].dag() * H_Control[j]).tr()
 
             u[r + 1, j, m] = u[r, j, m] + eps * du.real # Update control pulses according to gradient (gradient * distance to move along gradient)
 
