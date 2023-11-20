@@ -29,14 +29,14 @@ using built in functions from QuTip
 
 #%%
 #### Plot Pareto Front ####
-
+RandomUnitary = rand_unitary(4)
 Weights = np.arange(1.1, step = 0.1)
 
 EnergeticCost = []
 Fidelity = []
 
 for i in Weights:
-    EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2,
+    EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2,
                                                                             H_Control_5, Iterations_GRAPE,
                                                                             Timesteps, H_Labels_5,
                                                                             weight_ec = i, weight_fidelity = 1-i, Use_Rand_u0 = False, 
@@ -55,7 +55,7 @@ num_points = 30
 
 for i in range(num_points):
     rand_weight_ec = np.random.uniform(0, 1)
-    rand_energy, rand_fidelity = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2,
+    rand_energy, rand_fidelity = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2,
                                                                     H_Control_5, 5,
                                                                     Timesteps, H_Labels_5,
                                                                     weight_ec = rand_weight_ec, weight_fidelity = 1 - rand_weight_ec, Use_Rand_u0 = True, 
