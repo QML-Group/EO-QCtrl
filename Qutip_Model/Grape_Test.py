@@ -32,7 +32,7 @@ class GRAPEResult:
         self.H_t = H_t
         self.U_f = U_f
 
-def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec, weight_fidelity, H_Control, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
+def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec, weight_fidelity, H_Static, H_Control, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
     
     """
     Perform one iteration of GRAPE control pulse
@@ -81,7 +81,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
     ------
     The results are stored in u[r + 1, : , :].
     """
-
+    
     for m in range(M - 1): # Loop over all time steps 
         P = U_b_list[m] @ U # Backward propagator storing mat multiplication with target unitary 
         
@@ -92,10 +92,19 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
 
             #du += -(np.sqrt(7)/3) * weight_ec * dt * (u[r, j, m] / ((3*np.pi/2 + u[r, 0, m]**2 + u[r, 1, m]**2 + u[r, 2, m]**2)))  # Calculate Gradient Energetic Cost
 
-            du += -2 * weight_ec * dt * u[r, j, m] * (H_Control[j].dag() * H_Control[j]).tr()
+            #du += -2 * weight_ec * dt * u[r, j, m] * (H_Control[j].dag() * H_Control[j]).tr()
+            
+            denom = H_Static.dag() * H_Static + u[r, j, m] * (H_Static.dag() * H_Control[j] + H_Control[j].dag() * H_Static)
+            
+            for k in range(J):
+                
+                du += -1 * weight_ec * dt * ((H_Static.dag() * H_Control[j] + H_Control[j].dag() * H_Static).tr() + (H_Control[j].dag() * H_Control[k] * (u[r, j, m] + u[r, k, m])).tr())
+                denom += u[r, j, m] * u[r, k, m] * H_Control[j].dag() * H_Control[k]
+
+            du /= 2 * denom.tr()**(1/2)
 
             u[r + 1, j, m] = u[r, j, m] + eps * du.real # Update control pulses according to gradient (gradient * distance to move along gradient)
-
+    print(du)
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2]
 
@@ -143,7 +152,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=Non
             U_b = U_list[M - 2 - n].T.conj().tocsr() * U_b # Backward propagator 
 
         cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
-                       dt, eps, weight_ec, weight_fidelity, H_ops, alpha_val, beta_val, phase_sensitive,
+                       dt, eps, weight_ec, weight_fidelity, H0, H_ops, alpha_val, beta_val, phase_sensitive,
                        use_u_limits, u_min, u_max)
 
     H_td_func = [H0] + [[H_ops[j], u[-1, j, :]] for j in range(J)] # Store total Hamiltonian over time 
