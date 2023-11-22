@@ -14,13 +14,14 @@ using built in functions from QuTip
 """
 #%%
 #### Run Optimziation ####
+RandomUnitary = rand_unitary(4)
 
-#EC, F = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, # Run algorithm with set of initial parameters
-#                                           H_Control_5, Iterations_GRAPE, 
-#                                           Timesteps, H_Labels_5, 
-#                                           weight_ec = 0.0, weight_fidelity= 1.0,
-#                                           Plot_Control_Field = True, Plot_Tomography = True) 
-
+EC, F = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2, # Run algorithm with set of initial parameters
+                                           H_Control_4, Iterations_GRAPE, 
+                                           Timesteps, H_Labels_4, 
+                                           weight_ec = 0.5, weight_fidelity= 0.5,
+                                           Plot_Control_Field = True, Plot_Tomography = True, Plot_du = True) 
+print(f"EC is {EC}, Fidelity is {F}")
 
 
 
@@ -29,8 +30,10 @@ using built in functions from QuTip
 
 #%%
 #### Plot Pareto Front ####
+"""
+
 RandomUnitary = rand_unitary(4)
-Weights = np.arange(0.2, 1.1, step = 0.2)
+Weights = np.arange(1.1, step = 0.1)
 
 
 EnergeticCost = []
@@ -38,18 +41,27 @@ Fidelity = []
 
 for i in Weights:
     EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2,
-                                                                            H_Control_5, Iterations_GRAPE,
-                                                                            Timesteps, H_Labels_5,
+                                                                            H_Control_4, Iterations_GRAPE,
+                                                                            Timesteps, H_Labels_4,
                                                                             weight_ec = i, weight_fidelity = 1-i, Use_Rand_u0 = False, 
-                                                                            Plot_Control_Field = False, Plot_Tomography = False)
+                                                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = True)
     EnergeticCost.append(EnergeticCost_i_j)
     Fidelity.append(Fidelity_i_j)
-    print("Energetic Cost is:", EnergeticCost_i_j, " Fidelity is:", Fidelity_i_j)
+    print("Weight EC is", i ,"Energetic Cost is:", EnergeticCost_i_j, " Fidelity is:", Fidelity_i_j)
 
 EnergeticCost_Normalized = EnergeticCost / max(EnergeticCost)
 Error_Rate = np.ones(len(Fidelity)) - Fidelity
 print(EnergeticCost_Normalized)
 print(Error_Rate)
+
+plt.plot(EnergeticCost_Normalized, Error_Rate, ls = '-', color = 'green', marker = 'd', label = 'Pareto Front') 
+plt.xlabel('Energetic Cost')
+plt.ylabel('Infidelity')
+plt.title('Energetic Cost versus Infidelity')
+plt.legend()
+plt.grid()
+plt.show()
+"""
 
 #rand_fidelities = []
 #rand_energies = [] 
@@ -73,14 +85,14 @@ print(Error_Rate)
 
 #print(rand_energies_normalized, rand_errorrate)
 
-plt.plot(EnergeticCost_Normalized, Error_Rate, ls = '-', color = 'green', marker = 'd', label = 'Pareto Front') 
+#plt.plot(EnergeticCost_Normalized, Error_Rate, ls = '-', color = 'green', marker = 'd', label = 'Pareto Front') 
 #plt.scatter(rand_energies_normalized, rand_errorrate, marker = 'd', label = 'Random Control Parameters')
-plt.xlabel('Energetic Cost')
-plt.ylabel('Infidelity')
-plt.title('Energetic Cost versus Infidelity')
-plt.legend()
-plt.grid()
-plt.show()
+#plt.xlabel('Energetic Cost')
+#plt.ylabel('Infidelity')
+#plt.title('Energetic Cost versus Infidelity')
+#plt.legend()
+#plt.grid()
+#plt.show()
 
 #%%
 #### Plot Fidelity & EC as function of Weights ####

@@ -19,7 +19,7 @@ using the built-in QuTip optimal control suite and functions
 def _overlap(A, B):
     return (A.dag() * B).tr() / A.shape[0]
 
-def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, weight_ec, weight_fidelity, Use_Rand_u0 = False, Plot_Control_Field = False, Plot_Tomography = False):
+def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations, Timesteps,  H_Labels, weight_ec, weight_fidelity, Use_Rand_u0 = False, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
 
     """
     Calculate Optimal Control Fields and Energetic Cost for the Hamiltonian operators in H_Control so that the unitary U_target is realized
@@ -62,12 +62,12 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         #u0 = [np.convolve(np.ones(10)/10, u0[idx, :], mode = 'same') for idx in range(len(H_Control))] # Initialize starting control field
         u0 = np.random.uniform(-1, 1, size = (len(H_Control), len(time)))
 
-        result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
+        result, du_list_per_iteration = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                                 R = Iterations, u_start = u0, times = time, 
                                 eps = eps, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar()) 
     
     if Use_Rand_u0 == False: 
-        result = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
+        result, du_list_per_iteration = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                                 R = Iterations, u_start = None, times = time, 
                                 eps = eps, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar())
 
@@ -99,7 +99,18 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         fig_2 = qpt_plot_combined(chi_2, op_label, fig = fig_2, threshold = 0.001, title = 'Final Unitary after Optimization')
 
         plt.show()
-       
+
+    if Plot_du == True:
+        iteration_space = np.linspace(1, Iterations, Iterations)
+        for i in range(len(H_Control)):
+            plt.plot(iteration_space, du_list_per_iteration[:, i], label = f"Control Parameter {i+1}")
+        plt.xlabel("Number of GRAPE Iterations")
+        plt.ylabel("Time-Averaged Gradient")
+        plt.title("Time-Averaged Gradient vs. Number of GRAPE Iterations")
+        plt.legend()
+        plt.grid()
+        plt.show()
+        
     Fidelity = abs(_overlap(U_Target, result.U_f)) ** 2 # Compute Fidelity (absolute overlap squared)
     
     stepsize = max(time)/len(time) # Define stepsize 
