@@ -19,7 +19,7 @@ RandomUnitary = rand_unitary(4)
 EC, F = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2, # Run algorithm with set of initial parameters
                                            H_Control_4, Iterations_GRAPE, 
                                            Timesteps, H_Labels_4, 
-                                           weight_ec = 0.5, weight_fidelity= 0.5,
+                                           weight_ec = 0.8, weight_fidelity= 0.2,
                                            Plot_Control_Field = True, Plot_Tomography = True, Plot_du = True) 
 print(f"EC is {EC}, Fidelity is {F}")
 
