@@ -14,7 +14,7 @@ using the built-in QuTip optimal control suite and functions
 
 T = 2 * np.pi # Total gate time
 
-Iterations_GRAPE = 200 # Total number of GRAPE iterations
+Iterations_GRAPE = 100 # Total number of GRAPE iterations
 
 Timesteps = 500 # Total number of timesteps to discretize the time space
 

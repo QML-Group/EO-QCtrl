@@ -14,19 +14,33 @@ using built in functions from QuTip
 """
 #%%
 #### Run Optimziation ####
+
 RandomUnitary = rand_unitary(4)
+Weights = [0, 0.2, 0.5, 0.8]
+average_du_list = np.zeros((len(Weights), Iterations_GRAPE-1))
 
-EC, F = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2, # Run algorithm with set of initial parameters
-                                           H_Control_4, Iterations_GRAPE, 
-                                           Timesteps, H_Labels_4, 
-                                           weight_ec = 0.8, weight_fidelity= 0.2,
-                                           Plot_Control_Field = True, Plot_Tomography = True, Plot_du = True) 
-print(f"EC is {EC}, Fidelity is {F}")
+for index, value in enumerate(Weights):
+    EC, F, du_list = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2, # Run algorithm with set of initial parameters
+                                            H_Control_4, Iterations_GRAPE, 
+                                            Timesteps, H_Labels_4, 
+                                            weight_ec = value, weight_fidelity = 1 - value,
+                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False) 
+    print(f"EC is {EC}, Fidelity is {F}")
 
+    for i in range(Iterations_GRAPE-1):
+        average_du_list[index, i] = np.average(du_list[i])
+    
+iteration_space = np.linspace(1, Iterations_GRAPE - 1, Iterations_GRAPE - 1)
 
-
-
-
+for index, value in enumerate(Weights):
+    plt.plot(iteration_space, average_du_list[index], label = f"$w_E$ = {np.round(value, 1)}, $w_F$ = {np.round(1-value, 1)}")
+plt.axhline(y = 0, color = 'black', linestyle = '-')
+plt.xlabel("GRAPE Iteration Number")
+plt.ylabel("Average Maximum Gradient per Control Line")
+plt.title("Averaged Maximum Gradient per Control Line versus GRAPE Iteration Number")
+plt.legend()
+plt.grid()
+plt.show()
 
 #%%
 #### Plot Pareto Front ####
