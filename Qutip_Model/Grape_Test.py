@@ -84,7 +84,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
 
     du_list = np.zeros((J, M))
     avg_du_list = np.zeros((J))
-    
+    max_du_list = np.zeros((J))
     
     for m in range(M - 1): # Loop over all time steps 
         P = U_b_list[m] @ U # Backward propagator storing mat multiplication with target unitary 
@@ -115,13 +115,15 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
             du_list[j, m] = du.real
 
             avg_du_list[j] = np.average(du_list[j])
+
+            max_du_list[j] = np.max(du_list[j])
             
             u[r + 1, j, m] = u[r, j, m] + eps * du.real # Update control pulses according to gradient (gradient * distance to move along gradient)
 
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2]
 
-    return avg_du_list
+    return max_du_list
 
 
 def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=None, u_start=None,
@@ -142,7 +144,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=Non
     use_u_limits = 0 # Set u_limits to 0
     u_min = u_max = alpha_val = beta_val = 0.0 # Set all optional values to 0
 
-    du_avg_per_iteration = np.zeros((R, J))
+    du_max_per_iteration = np.zeros((R - 1, J))
 
     progress_bar.start(R) # Start progress bar
     for r in range(R - 1): # Start GRAPE Iterations Loop
@@ -169,7 +171,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=Non
             U_b_list.insert(0, U_b)
             U_b = U_list[M - 2 - n].T.conj().tocsr() * U_b # Backward propagator 
 
-        du_avg_per_iteration[r] = cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
+        du_max_per_iteration[r] = cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
                        dt, eps, weight_ec, weight_fidelity, H0, H_ops, alpha_val, beta_val, phase_sensitive,
                        use_u_limits, u_min, u_max)
         
@@ -178,7 +180,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=Non
     progress_bar.finished() # End progress bar 
 
     return GRAPEResult(u=u, U_f=Qobj(U_f_list[-1], dims=U.dims), # Return result 
-                       H_t=H_td_func), du_avg_per_iteration
+                       H_t=H_td_func), du_max_per_iteration
 
 
 def plot_grape_control_fields(times, u, labels, uniform_axes=False):

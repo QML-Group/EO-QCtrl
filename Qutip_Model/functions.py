@@ -101,12 +101,14 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         plt.show()
 
     if Plot_du == True:
-        iteration_space = np.linspace(1, Iterations, Iterations)
+        iteration_space = np.linspace(1, Iterations - 1, Iterations - 1)
+        
         for i in range(len(H_Control)):
-            plt.plot(iteration_space, du_list_per_iteration[:, i], label = f"Control Parameter {i+1}")
-        plt.xlabel("Number of GRAPE Iterations")
-        plt.ylabel("Time-Averaged Gradient")
-        plt.title("Time-Averaged Gradient vs. Number of GRAPE Iterations")
+            plt.plot(iteration_space, du_list_per_iteration[:, i], label = f"{H_Labels[i]}")
+        plt.axhline(y = 0, color = 'black', linestyle = '-')
+        plt.xlabel("GRAPE Iteration Number")
+        plt.ylabel("Maximum Gradient over Time")
+        plt.title("Maximum Gradient Over Time vs. GRAPE Iteration Number")
         plt.legend()
         plt.grid()
         plt.show()
