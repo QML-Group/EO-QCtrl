@@ -37,7 +37,7 @@ for index, value in enumerate(Weights):
 plt.axhline(y = 0, color = 'black', linestyle = '-')
 plt.xlabel("GRAPE Iteration Number")
 plt.ylabel("Average Maximum Gradient per Control Line")
-plt.title("Averaged Maximum Gradient per Control Line versus GRAPE Iteration Number")
+plt.title("Averaged Maximum Gradient per Control Line versus GRAPE Iteration Number \n $\epsilon_F$ = 2 $\pi$, $\epsilon_E$ = $20 \pi$")
 plt.legend()
 plt.grid()
 plt.show()

@@ -54,7 +54,9 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     time = np.linspace(0, T, Timesteps) # Define total time space
 
-    eps = 2 * np.pi * 1 # Termination value
+    eps_f = 2 * np.pi * 1 # GRAPE step size
+
+    eps_e =  2 * np.pi * 1 # GRAPE step size
 
     if Use_Rand_u0 == True:
 
@@ -64,12 +66,12 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
         result, du_list_per_iteration = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                                 R = Iterations, u_start = u0, times = time, 
-                                eps = eps, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar()) 
+                                eps_f = eps_f, eps_e = eps_e, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar()) 
     
     if Use_Rand_u0 == False: 
         result, du_list_per_iteration = cy_grape_unitary(U = U_Target, H0 = H_Static, H_ops = H_Control, # Run GRAPE Algorithm
                                 R = Iterations, u_start = None, times = time, 
-                                eps = eps, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar())
+                                eps_f = eps_f, eps_e = eps_e, weight_ec = weight_ec, weight_fidelity = weight_fidelity, phase_sensitive=False, progress_bar=TextProgressBar())
 
     Control_Fields = result.u # Store Control Fields 
 

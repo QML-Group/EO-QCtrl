@@ -32,7 +32,7 @@ class GRAPEResult:
         self.H_t = H_t
         self.U_f = U_f
 
-def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec, weight_fidelity, H_Static, H_Control, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
+def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps_f, eps_e, weight_ec, weight_fidelity, H_Static, H_Control, alpha, beta, phase_sensitive, use_u_limits, u_min, u_max):
     
     """
     Perform one iteration of GRAPE control pulse
@@ -92,7 +92,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
         for j in range(J): # Loop over all control fields 
             Q = 1j * dt * H_ops[j] @ U_f_list[m] # Forward propagator storing (i * dt * )
             
-            du = -2 * weight_fidelity * cy_overlap(P, Q) * cy_overlap(U_f_list[m], P) # Calculate Gradient Fidelity
+            du_f = -2 * weight_fidelity * cy_overlap(P, Q) * cy_overlap(U_f_list[m], P) # Calculate Gradient Fidelity
             
             #du += -(np.sqrt(7)/3) * weight_ec * dt * (u[r, j, m] / ((3*np.pi/2 + u[r, 0, m]**2 + u[r, 1, m]**2 + u[r, 2, m]**2)))  # Calculate Gradient Energetic Cost
 
@@ -110,15 +110,15 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
 
             du_e /= 2 * denom.tr()**(1/2)
 
-            du += du_e
+            du_t = du_f + du_e
 
-            du_list[j, m] = du.real
+            du_list[j, m] = du_t.real
 
             avg_du_list[j] = np.average(du_list[j])
 
             max_du_list[j] = np.max(du_list[j])
             
-            u[r + 1, j, m] = u[r, j, m] + eps * du.real # Update control pulses according to gradient (gradient * distance to move along gradient)
+            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real# Update control pulses according to gradient (gradient * distance to move along gradient)
 
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2]
@@ -126,13 +126,16 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps, weight_ec,
     return max_du_list
 
 
-def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=None, u_start=None,
+def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps_f=None, eps_e = None, u_start=None,
                      u_limits=None, interp_kind='linear', use_interp=False,
                      alpha=None, beta=None, phase_sensitive=True,
                      progress_bar=BaseProgressBar()):
    
-    if eps is None:
-        eps = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+    if eps_f is None:
+        eps_f = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+
+    if eps_e is None:
+        eps_e = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
 
     M = len(times) # Store number of time steps 
     J = len(H_ops) # Store number of control lines 
@@ -172,7 +175,7 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps=Non
             U_b = U_list[M - 2 - n].T.conj().tocsr() * U_b # Backward propagator 
 
         du_max_per_iteration[r] = cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
-                       dt, eps, weight_ec, weight_fidelity, H0, H_ops, alpha_val, beta_val, phase_sensitive,
+                       dt, eps_f, eps_e, weight_ec, weight_fidelity, H0, H_ops, alpha_val, beta_val, phase_sensitive,
                        use_u_limits, u_min, u_max)
         
     H_td_func = [H0] + [[H_ops[j], u[-1, j, :]] for j in range(J)] # Store total Hamiltonian over time 
