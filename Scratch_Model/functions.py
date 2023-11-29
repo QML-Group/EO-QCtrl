@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import basinhopping
 import random as rd
+import scipy.sparse as sp
 
 
 """
@@ -164,6 +165,46 @@ def Calculate_Unitary_Manual(H_Static, H_Control, Control_Pulses, Timesteps, Tot
         Unitary_Total = x @ Unitary_Total
 
     return Unitary_Total
+
+def Calculate_Unitary_List(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
+
+    """
+    Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
+
+    Parameters
+    ----------
+
+    H_Static : Static/Drift Hamiltonian Term
+
+    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields 
+
+    Control_Pulses : The Control Parameters for each term in "H_Control"
+
+    Timesteps : Number of timesteps 'N for time discretization
+
+    Total_Time : Total Unitary Gate Time
+
+    Returns 
+    ----------
+
+    Unitary_Total : Unitary Gate based on input parameters 
+
+    """
+
+    time = np.linspace(0, Total_Time, Timesteps+1)
+    
+    H_Total = 0
+    U_Total = []
+
+    for i in range(Timesteps-1):
+        dt = time[i+1] - time[i]
+        H_Total = H_Static
+        for j in range(len(H_Control)):
+            H_Total += Control_Pulses[j, i] * H_Control[j]
+        U = expm(-1j*H_Total*dt)
+        U_Total.append(U)
+
+    return U_Total
 
 def Calculate_Fidelity(U_Target, U):
 
@@ -404,11 +445,70 @@ def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
 
     return max_du_list
 
+def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_f = None, eps_e = None):
 
+    """
+    Run R iterations of GRAPE algorithm to find optimal pulses given any Static and Control Hamiltonian
 
-def RunGrapeOptimization():
+    Parameters 
+    ----------
 
-    grape_iteration()
+    U_Target : Target Unitary Evolution Operator
+
+    H_Control: Control operators (length J)
+
+    H_Static : Static / Drift Hamiltonian operators
+
+    R: Number of GRAPE iterations
+
+    times : Time array (0, T, M steps)
+
+    w_f : Weight assigned to Fidelity part of the Cost Function
+
+    w_e : Weight assigned to Energy part of the Cost Function
+
+    eps_f : Distance to move along the gradient when updating controls for Fidelity
+
+    eps_e : Distance to move along the gradient when updating controls for Energy
+    
+    Result 
+    ----------
+
+    Returns optimal control pulses to obtain certain target Unitary "U_Target"
+
+    """
+
+    M = len(times)
+    J = len(H_Control)
+
+    u = np.zeros((R, J, M))
+
+    du_max_per_iteration = np.zeros((R - 1, J))
+
+    for r in range(R - 1):
+        dt = times[1] - times[0]
+
+        U_list = Calculate_Unitary_List(H_Static, H_Control, u, M, times[-1])
+
+        U_f_list = []
+        U_b_list = []
+
+        U_f = 1
+        U_b = sp.eye(*(U_Target.shape))
+
+        for n in range(M - 1):
+
+            U_f = U_list[n] * U_f
+            U_f_list.append(U_f)
+
+            U_b_list.insert(0, U_b)
+            U_b = U_list[M - 2 -n].conj().T.tocsr() * U_b
+
+        du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
+                                                  dt, eps_f, eps_e, w_f, w_e)
+        
+    return u, du_max_per_iteration
+
+def Calculate_Optimal_Control_Pulses():
 
     pass
-
