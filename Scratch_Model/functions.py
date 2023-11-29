@@ -216,7 +216,7 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     H_T = 0
     time = np.linspace(0, Total_Time, Timesteps+1)
 
-    NormalizeValue = Total_Time * (np.linalg.norm(H_Static) + np.sum(np.linalg.norm(H_Control)))
+    NormalizeValue = Total_Time * (np.linalg.norm(H_Static + np.sum(H_Control)))
     
     for i in range(Timesteps-1):
         dt = time[i+1] - time[i]
@@ -320,4 +320,95 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
 
     return result['fun'], result['x'], Final_Unitary 
 
+def overlap(A, B):
+    return np.trace(A.conj().T @ B) / A.shape[0]
+
+def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
+
+    """
+    Perform one iteration of the GRAPE algorithm 
+    and update control pulse parameters.
+
+    Parameters 
+    ----------
+
+    U_Target : Target Unitary Evolution Operator
+
+    u : The generated control pulses with shape (iterations, controls, time)
+
+    r : The number of this specific GRAPE iteration
+
+    J : The number of controls in Control Hamiltonian
+
+    M : Number of time steps
+
+    U_b_list : Backward propagators of each time (length M)
+
+    U_f_list : Forward propagators of each time (length M)
+
+    H_Control: Control operators (length J)
+
+    H_Static : Static / Drift Hamiltonian operators
+
+    dt : Timestep size
+
+    eps_f : Distance to move along the gradient when updating controls for Fidelity
+
+    eps_e : Distance to move along the gradient when updating controls for Energy
+
+    w_f : Weight assigned to Fidelity part of the Cost Function
+
+    w_e : Weight assigned to Energy part of the Cost Function
+ 
+    Result 
+    ----------
+
+    The updated parameters u[r + 1, :, : ]
+    """
+
+    du_list = np.zeros((J, M)) # Initialize array for storing gradient
+    max_du_list = np.zeros((J)) # Initialize array for storing maximum of gradient
+
+    for m in range(M - 1): # Loop over all time steps 
+
+        P = U_b_list[m] @ U_Target # Backward propagator storing matmul with target unitary 
+
+        for j in range(J): # Loop over all control operators in H_Control 
+
+            Q = 1j * dt * H_Control[j] @ U_f_list[m] # Forward propagator storing (i * dt * ...)
+
+            du_f = -2 * w_f * overlap(P, Q) * overlap(U_f_list[m], P) # Calculate gradient Fidelity
+
+            denom = H_Static.conj().T @ H_Static + u[r, j, m] * (H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) # Calculate denominator part gradient Energy
+
+            du_e = 0 # Initialize Energy gradient variable 
+
+            for k in range(J): # Second loop over all control operators in H_Control 
+
+                du_e += -1 * dt * w_e * (np.trace(H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) + np.trace(H_Control[j].conj().T @ H_Control[k] * (u[r, j, m] + u[r, k, m]))) # Calculate numerator Gradient Energy
+
+                denom += u[r, j, m] * u[r, k, m] * H_Control[j].conj().T @ H_Control[k] # Update denominator Energy Gradient
+
+            du_e /= 2 * np.trace(denom) ** (1/2) # Combine numerator and denominator and take trace + square root (^(1/2))
+
+            du_t = du_f + du_e # Store total gradient (addition of Fidelity and Energy Gradient)
+
+            du_list[j, m] = du_t.real # Update list with all gradients
+
+            max_du_list[j] = np.max(du_list[j]) # Calculate maximum and store in max gradient array
+
+            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
+
+    for j in range(J):
+        u[r + 1, j, M - 1] = u[r + 1, j, M - 2] 
+
+    return max_du_list
+
+
+
+def RunGrapeOptimization():
+
+    grape_iteration()
+
+    pass
 
