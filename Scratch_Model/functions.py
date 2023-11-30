@@ -474,7 +474,11 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
     Result 
     ----------
 
-    Returns optimal control pulses to obtain certain target Unitary "U_Target"
+    u : Optimized control pulses with dimension (iterations, controls, timesteps)
+
+    U_f_list[-1] : Final unitary based on last GRAPE iteration
+
+    du_max_per_iteration : Array containing the max gradient of each control for all GRAPE iterations
 
     """
 
@@ -507,8 +511,98 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
         du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
                                                   dt, eps_f, eps_e, w_f, w_e)
         
-    return u, du_max_per_iteration
+    return u, U_f_list[-1], du_max_per_iteration
 
-def Calculate_Optimal_Control_Pulses():
+def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
 
-    pass
+    """
+    Runs GRAPE algorithm and returns the control pulses, final unitary, Fidelity, and Energetic Cost for the Hamiltonian operators in H_Control
+    so that the unitary U_target is realized 
+
+    Parameters 
+    ----------
+
+    U_Target : Target Unitary Evolution Operator
+
+    H_Control: Control operators (length J)
+
+    H_Static : Static / Drift Hamiltonian operators
+
+    H_Labels : Labels according to the Control operators in H_Control 
+
+    R: Number of GRAPE iterations
+
+    Timesteps : Number of timesteps 
+
+    T : Total time 
+
+    w_f : Weight assigned to Fidelity part of the Cost Function
+
+    w_e : Weight assigned to Energy part of the Cost Function
+
+    Plot_Control_Field : if True : Plot Control Fields 
+
+    Plot_Tomography : if True : Plot Tomography of Target Unitary and Final Unitary Gate after optimization
+
+    Plot_du : if True : plot max gradient over all timesteps per control operator as function of GRAPE iterations
+    
+    Result 
+    ----------
+
+    u : Optimized control pulses with dimension (iterations, controls, timesteps)
+
+    U_f_list[-1] : Final unitary based on last GRAPE iteration
+
+    du_max_per_iteration : Array containing the max gradient of each control for all GRAPE iterations
+
+    F : Fidelity (normalized overlap squared) between Final Unitary and Target Unitary
+
+    EC_Norm : Normalized Energetic Cost of optimized control pulses 
+
+    """
+
+    time = np.linspace(0, T, Timesteps) # Define total time space
+
+    eps_f = 2 * np.pi * 1 # GRAPE step size fidelity
+
+    eps_e = 2 * np.pi * 1 # GRAPE step size energy
+
+    result, U_Final, du_list = RunGrapeOptimization(U_Target, H_Static, H_Control, R, time, 
+                                                w_f, w_e, eps_f, eps_e) # Run GRAPE Optimization
+    
+    F = Calculate_Fidelity(U_Target, U_Final) # Calculate and store Fidelity
+
+    EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
+    
+    if Plot_Control_Field == True: # Plot control fields 
+
+        fig, ax = plt.subplots(len(H_Control))
+
+        for i in range(len(H_Control)):
+
+            ax[i].plot(time, result[-1, i, :], label = f"{H_Labels[i]}")
+            ax[i].set(xlabel = "Time", ylabel = f"{H_Labels[i]}")
+        
+        plt.subplot_tool()
+        plt.show()
+
+    if Plot_Tomography == True: # Plot Tomography of Unitary 
+
+        print("Feature to be added")
+
+    if Plot_du == True:
+
+        iteration_space = np.linspace(1, R - 1, R - 1)
+
+        for i in range(len(H_Control)):
+            plt.plot(iteration_space, du_list[:, i], label = f"{H_Labels[i]}")
+        plt.axhline(y = 0, color = "black", linestyle = "-")
+        plt.xlabel("GRAPE Iteration Number")
+        plt.ylabel("Maximum Gradient over Time")
+        plt.title("Maximum Gradient over Time vs. GRAPE Iteration Number")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+    return result, U_Final, du_list, F, EC
+
