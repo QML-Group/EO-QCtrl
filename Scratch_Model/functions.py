@@ -7,6 +7,8 @@ from scipy.optimize import Bounds
 from scipy.optimize import basinhopping
 import random as rd
 import scipy.sparse as sp
+from alive_progress import alive_bar
+import time
 
 
 """
@@ -489,28 +491,30 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
 
     du_max_per_iteration = np.zeros((R - 1, J))
 
-    for r in range(R - 1):
-        dt = times[1] - times[0]
+    with alive_bar(R - 1) as bar:
+        for r in range(R - 1):
+            bar()
+            dt = times[1] - times[0]
 
-        U_list = Calculate_Unitary_List(H_Static, H_Control, u, M, times[-1])
+            U_list = Calculate_Unitary_List(H_Static, H_Control, u, M, times[-1])
 
-        U_f_list = []
-        U_b_list = []
+            U_f_list = []
+            U_b_list = []
 
-        U_f = 1
-        U_b = sp.eye(*(U_Target.shape))
+            U_f = 1
+            U_b = sp.eye(*(U_Target.shape))
 
-        for n in range(M - 1):
+            for n in range(M - 1):
 
-            U_f = U_list[n] * U_f
-            U_f_list.append(U_f)
+                U_f = U_list[n] * U_f
+                U_f_list.append(U_f)
 
-            U_b_list.insert(0, U_b)
-            U_b = U_list[M - 2 -n].conj().T.tocsr() * U_b
+                U_b_list.insert(0, U_b)
+                U_b = U_list[M - 2 -n].conj().T.tocsr() * U_b
 
-        du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
-                                                  dt, eps_f, eps_e, w_f, w_e)
-        
+            du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
+                                                    dt, eps_f, eps_e, w_f, w_e)
+            
     return u, U_f_list[-1], du_max_per_iteration
 
 def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):

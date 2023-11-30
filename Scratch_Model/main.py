@@ -16,8 +16,15 @@ Work in Progress
 
 """
 
-# Run Optimization Code
+# Run GRAPE Optimization
 
+T = 2 * np.pi
+
+
+
+# Run Nelder Mead Optimization
+
+"""
 start_time = time.time()
 
 T = 2 * np.pi
@@ -46,5 +53,5 @@ for i in range(len(H_Control_5)):
 
 plt.subplot_tool()
 plt.show()
-
+"""
 
