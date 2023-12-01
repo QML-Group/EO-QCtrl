@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from functions import *
-from input import *
+import functions 
+import input
 import random as rd
 import time
 
@@ -19,7 +19,16 @@ Work in Progress
 # Run GRAPE Optimization
 
 T = 2 * np.pi
+steps = 500
+GRAPE_Iterations = 1000
 
+
+
+Control_Pulses, Final_Unitary, Gradient_List, Fidelity = functions.Calculate_Optimal_Control_Pulses(input.U_Target_CNOT, input.H_Static_2, input.H_Control_4, input.H_Labels_4,
+                                                                                                  GRAPE_Iterations, steps, T, w_f = 1, w_e = 0,
+                                                                                                  Plot_Control_Field = True, Plot_Tomography = False, Plot_du = True)
+
+print(f"Fidelity is {Fidelity}, Final Unitary is {Final_Unitary}")
 
 
 # Run Nelder Mead Optimization

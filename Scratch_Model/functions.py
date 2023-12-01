@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import expm
-from scipy.stats import unitary_group
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import basinhopping
@@ -9,7 +8,7 @@ import random as rd
 import scipy.sparse as sp
 from alive_progress import alive_bar
 import time
-
+from qutip.sparse import sp_expm
 
 """
 
@@ -21,64 +20,6 @@ Quantum Optimal Control problems in python
 Work in Progress
 
 """
-
-def tensor(a, b):
-    """
-    Returns tensor product between two matrices
-    """
-
-    return np.kron(a, b)
-
-def identity(N):
-    """
-    Returns Identity Matrix with Dimension 'N'
-    """
-
-    return np.identity(N)
-
-def sigmax():
-    """
-    Returns Pauli-x Matrix 
-    """
-
-    return np.array([[0,1],
-                     [1,0]])
-
-def sigmay():
-    """
-    Returns Pauli-y Matrix 
-    """
-
-    return np.array([[0, -1j],
-                     [1j, 0]])
-
-def sigmaz():
-    """
-    Returns Pauli-z Matrix 
-    """
-
-    return np.array([[1, 0],
-                     [0, -1]])
-
-def cnot():
-    """
-    Returns CNOT Unitary Gate 
-    """
-
-    return np.array([[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, 0, 1],
-                     [0, 0, 1, 0]])
-
-def rand_unitary(N):
-    """
-    Returns N-Dimenstional Random Unitary 
-    """
-
-    x = unitary_group.rvs(N)
-    y = np.dot(x, x.conj().T)
-
-    return y
 
 def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
 
@@ -228,9 +169,8 @@ def Calculate_Fidelity(U_Target, U):
     """
 
     F = abs(np.trace(U_Target.conj().T @ U)/np.trace(U_Target.conj().T @ U_Target))**2
-    Error_Rate = 1- F
     
-    return Error_Rate 
+    return F
 
 def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
 
@@ -256,22 +196,22 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
     EC : Energetic Cost of the Control Pulses based on the static and drift Hamiltonian 
     """
 
-    H_T = 0
-    time = np.linspace(0, Total_Time, Timesteps+1)
-
-    NormalizeValue = Total_Time * (np.linalg.norm(H_Static + np.sum(H_Control)))
+    H_T_Norm = []
+    stepsize = Total_Time/Timesteps
     
     for i in range(Timesteps-1):
-        dt = time[i+1] - time[i]
+        H_T = 0
+        
         for j in range(len(H_Control)):
-            H_T += np.abs(Control_Pulses[i*len(H_Control) + j] * H_Control[j]) * dt
+            H_T += Control_Pulses[j, i] * H_Control[j] 
             #EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
-        H_T += H_Static * dt
-        EC = np.linalg.norm(H_T)
-    
-    EC_Normalized = EC / NormalizeValue
-    
-    return EC_Normalized
+       
+        H_T += H_Static 
+
+        H_T_Norm.append(np.linalg.norm(H_T))
+
+    EC = np.sum(H_T_Norm) * stepsize
+    return EC
 
 def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
 
@@ -364,7 +304,7 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
     return result['fun'], result['x'], Final_Unitary 
 
 def overlap(A, B):
-    return np.trace(A.conj().T @ B) / A.shape[0]
+    return np.trace(np.matmul(A.conj().T, B)) / A.shape[0]
 
 def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
 
@@ -422,25 +362,26 @@ def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
 
             du_f = -2 * w_f * overlap(P, Q) * overlap(U_f_list[m], P) # Calculate gradient Fidelity
 
-            denom = H_Static.conj().T @ H_Static + u[r, j, m] * (H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) # Calculate denominator part gradient Energy
+            #denom = H_Static.conj().T @ H_Static + u[r, j, m] * (H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) # Calculate denominator part gradient Energy
 
-            du_e = 0 # Initialize Energy gradient variable 
+            #du_e = 0 # Initialize Energy gradient variable 
 
-            for k in range(J): # Second loop over all control operators in H_Control 
+            #for k in range(J): # Second loop over all control operators in H_Control 
 
-                du_e += -1 * dt * w_e * (np.trace(H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) + np.trace(H_Control[j].conj().T @ H_Control[k] * (u[r, j, m] + u[r, k, m]))) # Calculate numerator Gradient Energy
+                #du_e += -1 * dt * w_e * (np.trace(H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) + np.trace(H_Control[j].conj().T @ H_Control[k] * (u[r, j, m] + u[r, k, m]))) # Calculate numerator Gradient Energy
 
-                denom += u[r, j, m] * u[r, k, m] * H_Control[j].conj().T @ H_Control[k] # Update denominator Energy Gradient
+                #denom += u[r, j, m] * u[r, k, m] * H_Control[j].conj().T @ H_Control[k] # Update denominator Energy Gradient
 
-            du_e /= 2 * np.trace(denom) ** (1/2) # Combine numerator and denominator and take trace + square root (^(1/2))
+            #du_e /= (2 * np.trace(denom) ** (1/2)) # Combine numerator and denominator and take trace + square root (^(1/2))
 
-            du_t = du_f + du_e # Store total gradient (addition of Fidelity and Energy Gradient)
+            #du_t = du_f + du_e # Store total gradient (addition of Fidelity and Energy Gradient)
 
-            du_list[j, m] = du_t.real # Update list with all gradients
+            du_list[j, m] = du_f.real # Update list with all gradients
 
             max_du_list[j] = np.max(du_list[j]) # Calculate maximum and store in max gradient array
 
-            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
+            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real
+            #u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
 
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2] 
@@ -496,7 +437,12 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
             bar()
             dt = times[1] - times[0]
 
-            U_list = Calculate_Unitary_List(H_Static, H_Control, u, M, times[-1])
+            def _H_idx(idx):
+                return H_Static + sum([u[r, j, idx] * H_Control[j] for j in range(J)])
+
+            #U_list = Calculate_Unitary_List(H_Static, H_Control, u[r], M, times[-1])
+
+            U_list = [expm(-1j * _H_idx(idx) * dt) for idx in range(M - 1)]
 
             U_f_list = []
             U_b_list = []
@@ -510,7 +456,7 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
                 U_f_list.append(U_f)
 
                 U_b_list.insert(0, U_b)
-                U_b = U_list[M - 2 -n].conj().T.tocsr() * U_b
+                U_b = U_list[M - 2 - n].T.conj() * U_b
 
             du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
                                                     dt, eps_f, eps_e, w_f, w_e)
@@ -574,9 +520,9 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
     result, U_Final, du_list = RunGrapeOptimization(U_Target, H_Static, H_Control, R, time, 
                                                 w_f, w_e, eps_f, eps_e) # Run GRAPE Optimization
     
-    F = Calculate_Fidelity(U_Target, U_Final) # Calculate and store Fidelity
+    F = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
 
-    EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
+    #EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
     
     if Plot_Control_Field == True: # Plot control fields 
 
@@ -608,5 +554,5 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
         plt.grid()
         plt.show()
 
-    return result, U_Final, du_list, F, EC
+    return result, U_Final, du_list, F
 
