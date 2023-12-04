@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.linalg import expm
+#from scipy.linalg import expm
+from scipy.sparse.linalg import expm
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import basinhopping
@@ -304,7 +305,7 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
     return result['fun'], result['x'], Final_Unitary 
 
 def overlap(A, B):
-    return np.trace(np.matmul(A.conj().T, B)) / A.shape[0]
+    return np.trace(A.conj().T @ B) / A.shape[0]
 
 def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
 
@@ -425,6 +426,12 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
 
     """
 
+    if eps_f is None:
+        eps_f = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+
+    if eps_e is None:
+        eps_e = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+
     M = len(times)
     J = len(H_Control)
 
@@ -458,9 +465,11 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
                 U_b_list.insert(0, U_b)
                 U_b = U_list[M - 2 - n].T.conj() * U_b
 
-            du_max_per_iteration[r] = grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static,
-                                                    dt, eps_f, eps_e, w_f, w_e)
+            du_max_per_iteration[r] = grape_iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
+                                                    dt = dt, eps_f = eps_f, eps_e = eps_e, w_f = w_f, w_e = w_e)
             
+    
+
     return u, U_f_list[-1], du_max_per_iteration
 
 def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
@@ -516,11 +525,13 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
     eps_f = 2 * np.pi * 1 # GRAPE step size fidelity
 
     eps_e = 2 * np.pi * 1 # GRAPE step size energy
-
-    result, U_Final, du_list = RunGrapeOptimization(U_Target, H_Static, H_Control, R, time, 
-                                                w_f, w_e, eps_f, eps_e) # Run GRAPE Optimization
     
-    F = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
+    result, U_Final, du_list = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
+                                                w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
+    
+    F_1 = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
+
+    F_2 = Calculate_Fidelity(U_Target = U_Target, U = U_Final)
 
     #EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
     
@@ -554,5 +565,5 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
         plt.grid()
         plt.show()
 
-    return result, U_Final, du_list, F
+    return result, U_Final, du_list, F_1, F_2
 
