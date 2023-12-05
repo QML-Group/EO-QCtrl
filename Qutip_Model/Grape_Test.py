@@ -118,7 +118,7 @@ def cy_grape_inner(U, u, r, J, M, U_b_list, U_f_list, H_ops, dt, eps_f, eps_e, w
 
             max_du_list[j] = np.max(du_list[j])
             
-            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real# Update control pulses according to gradient (gradient * distance to move along gradient)
+            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update control pulses according to gradient (gradient * distance to move along gradient)
 
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2]
@@ -131,11 +131,11 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps_f=N
                      alpha=None, beta=None, phase_sensitive=True,
                      progress_bar=BaseProgressBar()):
    
-    if eps_f is None:
-        eps_f = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+    #if eps_f is None:
+    #    eps_f = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
 
-    if eps_e is None:
-        eps_e = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
+    #if eps_e is None:
+    #    eps_e = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
 
     M = len(times) # Store number of time steps 
     J = len(H_ops) # Store number of control lines 
@@ -148,6 +148,9 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps_f=N
     u_min = u_max = alpha_val = beta_val = 0.0 # Set all optional values to 0
 
     du_max_per_iteration = np.zeros((R - 1, J))
+
+    eps_e_range = np.linspace(2 * np.pi, 0.1, R - 1)
+    eps_f_range = np.linspace(2 * np.pi, 0.1, R - 1)
 
     progress_bar.start(R) # Start progress bar
     for r in range(R - 1): # Start GRAPE Iterations Loop

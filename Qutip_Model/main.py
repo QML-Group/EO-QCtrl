@@ -58,7 +58,7 @@ for i in Weights:
                                                                             H_Control_4, Iterations_GRAPE,
                                                                             Timesteps, H_Labels_4,
                                                                             weight_ec = i, weight_fidelity = 1-i, Use_Rand_u0 = False, 
-                                                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False)
+                                                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = True)
     EnergeticCost.append(EnergeticCost_i_j)
     Fidelity.append(Fidelity_i_j)
     print("Weight EC is", i ,"Energetic Cost is:", EnergeticCost_i_j, " Fidelity is:", Fidelity_i_j)
