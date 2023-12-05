@@ -529,9 +529,7 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
     result, U_Final, du_list = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
                                                 w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
     
-    F_1 = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
-
-    F_2 = Calculate_Fidelity(U_Target = U_Target, U = U_Final)
+    F = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
 
     #EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
     
@@ -565,5 +563,5 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
         plt.grid()
         plt.show()
 
-    return result, U_Final, du_list, F_1, F_2
+    return result, U_Final, du_list, F
 
