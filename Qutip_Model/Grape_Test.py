@@ -176,6 +176,8 @@ def cy_grape_unitary(U, H0, H_ops, R, times, weight_ec, weight_fidelity, eps_f=N
 
             U_b_list.insert(0, U_b)
             U_b = U_list[M - 2 - n].T.conj().tocsr() * U_b # Backward propagator 
+        
+        #print(u)
 
         du_max_per_iteration[r] = cy_grape_inner(U.data, u, r, J, M, U_b_list, U_f_list, H_ops_data, # Calculate Gradient based on cy_grape_inner function --> update control parameters --> do R times
                        dt, eps_f, eps_e, weight_ec, weight_fidelity, H0, H_ops, alpha_val, beta_val, phase_sensitive,

@@ -20,13 +20,15 @@ Work in Progress
 
 T = 2 * np.pi
 steps = 500
-GRAPE_Iterations = 100
+GRAPE_Iterations = 500
 
-Control_Pulses, Final_Unitary, Gradient_List, Fidelity = functions.Calculate_Optimal_Control_Pulses(input.U_Target_CNOT, input.H_Static_1, input.H_Control_4, input.H_Labels_4,
+U_Target_Random = input.rand_unitary(4)
+
+Control_Pulses, Final_Unitary, Gradient_List, Fidelity = functions.Calculate_Optimal_Control_Pulses(input.U_Target_CNOT, input.H_Static_1, input.H_Control_5, input.H_Labels_5,
                                                                                                   GRAPE_Iterations, steps, T, w_f = 1, w_e = 0,
                                                                                                   Plot_Control_Field = True, Plot_Tomography = False, Plot_du = True)
 
-print(f"Fidelity method 1 is {Fidelity}")
+print(f"Fidelity method 1 is {Fidelity}, Final Unitary is {Final_Unitary}")
 
 
 # Run Nelder Mead Optimization

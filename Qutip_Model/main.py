@@ -12,6 +12,13 @@ using built in functions from QuTip
 
 
 """
+
+U_Final, EC, F, du_list = CalculateOptimalFieldEnergeticCost(U_target_CNOT, H_Static_2, 
+                                            H_Control_4, Iterations_GRAPE, 
+                                            Timesteps, H_Labels_4, 
+                                            weight_ec = 0, weight_fidelity = 1,
+                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False)
+print(U_Final)
 #%%
 #### Run Optimziation ####
 """
@@ -45,6 +52,7 @@ plt.show()
 #%%
 #### Plot Pareto Front ####
 
+"""
 
 RandomUnitary = rand_unitary(4)
 Weights = np.arange(1.1, step = 0.1)
@@ -75,7 +83,7 @@ plt.title('Energetic Cost versus Infidelity')
 plt.legend()
 plt.grid()
 plt.show()
-
+"""
 
 #rand_fidelities = []
 #rand_energies = [] 

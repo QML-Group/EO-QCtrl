@@ -144,4 +144,4 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
         #Energetic_Cost += np.linalg.norm(H_Static) * stepsize
         #Energetic_Cost_List.append(Energetic_Cost) 
 
-    return Energetic_Cost, Fidelity, du_list_per_iteration
+    return result.U_f, Energetic_Cost, Fidelity, du_list_per_iteration

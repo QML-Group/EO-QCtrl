@@ -454,21 +454,23 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
             U_f_list = []
             U_b_list = []
 
-            U_f = 1
+            U_f = sp.eye(*(U_Target.shape))
             U_b = sp.eye(*(U_Target.shape))
 
             for n in range(M - 1):
 
-                U_f = U_list[n] * U_f
+                U_f = U_list[n] @ U_f
                 U_f_list.append(U_f)
 
                 U_b_list.insert(0, U_b)
-                U_b = U_list[M - 2 - n].T.conj() * U_b
+                U_b = U_list[M - 2 - n].T.conj() @ U_b
+
+            #print(u)
 
             du_max_per_iteration[r] = grape_iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
                                                     dt = dt, eps_f = eps_f, eps_e = eps_e, w_f = w_f, w_e = w_e)
             
-    
+
 
     return u, U_f_list[-1], du_max_per_iteration
 
@@ -530,7 +532,7 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
                                                 w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
     
     F = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
-
+    F_2 = Calculate_Fidelity(U_Target, U_Final)
     #EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
     
     if Plot_Control_Field == True: # Plot control fields 
@@ -563,5 +565,5 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
         plt.grid()
         plt.show()
 
-    return result, U_Final, du_list, F
+    return result, U_Final, du_list, F_2
 
