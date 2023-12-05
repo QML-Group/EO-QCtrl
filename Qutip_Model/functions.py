@@ -77,7 +77,7 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
 
     Final_Control_Fields = result.U_f # Store Final Control Fields 
 
-    print(Control_Fields[Iterations-1])
+    #print(Control_Fields[Iterations-1])
 
     if Plot_Control_Field == True: # Plot Control Fields if set to 'True'
 
@@ -122,13 +122,26 @@ def CalculateOptimalFieldEnergeticCost(U_Target, H_Static, H_Control, Iterations
     Energetic_Cost = 0 # Initialize Energetic Cost Variable to 0 
    
     Energetic_Cost_List = [] # Initialiaze Energetic Cost List to empty
-    
+
     # Calculate Energetic Cost of Entire Unitary (loop over every timestep and H_Control Terms)
 
     for i in range(len(time)):
+
+        Total_Hamiltonian = 0
+
         for j in range(len(H_Control)):
-            Energetic_Cost += np.abs(Control_Fields[Iterations-1, j, i] * np.linalg.norm(H_Control[j])) * stepsize
-        Energetic_Cost += np.linalg.norm(H_Static) * stepsize
-        Energetic_Cost_List.append(Energetic_Cost) 
+
+            Total_Hamiltonian += Control_Fields[-1, j, i] * H_Control[j]
+
+            #Energetic_Cost += np.abs(Control_Fields[Iterations-1, j, i] * np.linalg.norm(H_Control[j])) * stepsize
+
+        #Total_Hamiltonian += H_Static
+
+        Energetic_Cost_List.append(np.linalg.norm(Total_Hamiltonian))
+
+    Energetic_Cost = np.sum(Energetic_Cost_List) * stepsize
+
+        #Energetic_Cost += np.linalg.norm(H_Static) * stepsize
+        #Energetic_Cost_List.append(Energetic_Cost) 
 
     return Energetic_Cost, Fidelity, du_list_per_iteration

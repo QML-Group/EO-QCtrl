@@ -14,7 +14,7 @@ using built in functions from QuTip
 """
 #%%
 #### Run Optimziation ####
-
+"""
 RandomUnitary = rand_unitary(4)
 Weights = [0, 0.2, 0.5, 0.8]
 average_du_list = np.zeros((len(Weights), Iterations_GRAPE-1))
@@ -41,24 +41,24 @@ plt.title("Averaged Maximum Gradient per Control Line versus GRAPE Iteration Num
 plt.legend()
 plt.grid()
 plt.show()
-
+"""
 #%%
 #### Plot Pareto Front ####
-"""
+
 
 RandomUnitary = rand_unitary(4)
 Weights = np.arange(1.1, step = 0.1)
-
+du_var = 0
 
 EnergeticCost = []
 Fidelity = []
 
 for i in Weights:
-    EnergeticCost_i_j, Fidelity_i_j = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2,
+    EnergeticCost_i_j, Fidelity_i_j, du_var = CalculateOptimalFieldEnergeticCost(RandomUnitary, H_Static_2,
                                                                             H_Control_4, Iterations_GRAPE,
                                                                             Timesteps, H_Labels_4,
                                                                             weight_ec = i, weight_fidelity = 1-i, Use_Rand_u0 = False, 
-                                                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = True)
+                                                                            Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False)
     EnergeticCost.append(EnergeticCost_i_j)
     Fidelity.append(Fidelity_i_j)
     print("Weight EC is", i ,"Energetic Cost is:", EnergeticCost_i_j, " Fidelity is:", Fidelity_i_j)
@@ -75,7 +75,7 @@ plt.title('Energetic Cost versus Infidelity')
 plt.legend()
 plt.grid()
 plt.show()
-"""
+
 
 #rand_fidelities = []
 #rand_energies = [] 
