@@ -15,11 +15,9 @@ Work in Progress
 
 """
 
-# Run GRAPE Optimization
-
-Control_Pulses, Final_Unitary, Gradient_List, Fidelity = Run_GRAPE_Simulation(U_Target_CNOT, H_Static_Ising, H_Control_4, H_Labels_4,
-                                                                                                  GRAPE_Iterations, Timesteps, T, w_f = 1, w_e = 0,
-                                                                                                  eps_f = 2 * np.pi, eps_e = 2 * np.pi,
+Control_Pulses, Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(U_Target_CNOT, H_Static_Ising, H_Control_4, H_Labels_4,
+                                                                                                  GRAPE_Iterations, Timesteps, T, w_f = 0.4, w_e = 0.6,
+                                                                                                  eps_f = eps_f, eps_e = eps_e,
                                                                                                   Plot_Control_Field = True, Plot_Tomography = False, Plot_du = True)
 
-print(f"Fidelity method 1 is {Fidelity}, Final Unitary is {Final_Unitary}")
+print(f"Fidelity method is {Fidelity}, Energy is {Energy}")
