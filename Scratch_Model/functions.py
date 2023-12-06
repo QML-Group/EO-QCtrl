@@ -331,8 +331,8 @@ def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
             du_f = -2 * w_f * overlap(P, Q) * overlap(U_f_list[m], P) # Calculate gradient Fidelity
 
             denom = H_Static.conj().T @ H_Static + u[r, j, m] * (H_Static.conj().T @ H_Control[j] + H_Control[j].conj().T @ H_Static) # Calculate denominator part gradient Energy
-
-            du_e = 0 # Initialize Energy gradient variable 
+            
+            du_e = 0
 
             for k in range(J): # Second loop over all control operators in H_Control 
 
@@ -348,7 +348,6 @@ def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
 
             max_du_list[j] = np.max(du_list[j]) # Calculate maximum and store in max gradient array
 
-            #u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real
             u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
 
     for j in range(J):

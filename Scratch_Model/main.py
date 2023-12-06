@@ -16,7 +16,7 @@ Work in Progress
 """
 
 Control_Pulses, Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(U_Target_CNOT, H_Static_Ising, H_Control_4, H_Labels_4,
-                                                                                                  GRAPE_Iterations, Timesteps, T, w_f = 0.4, w_e = 0.6,
+                                                                                                  GRAPE_Iterations, Timesteps, T, w_f = 0.8, w_e = 0.2,
                                                                                                   eps_f = eps_f, eps_e = eps_e,
                                                                                                   Plot_Control_Field = True, Plot_Tomography = False, Plot_du = True)
 
