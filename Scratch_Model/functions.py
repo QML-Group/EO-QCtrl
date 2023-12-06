@@ -6,6 +6,8 @@ from scipy.optimize import basinhopping
 import scipy.sparse as sp
 from alive_progress import alive_bar
 from scipy.stats import unitary_group
+from qutip import to_super, qpt, qpt_plot_combined, Qobj
+
 
 """
 
@@ -507,7 +509,21 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
 
     if Plot_Tomography == True: # Plot Tomography of Unitary 
 
-        print("Feature to be added")
+        op_basis = [[Qobj(identity(2)), Qobj(sigmax()), Qobj(sigmay()), Qobj(sigmaz())]] * 2
+        op_label = [["I", "X", "Y", "Z"]] * 2      
+        U_i_s = to_super(Qobj(U_Target))
+        U_f_s = to_super(Qobj(U_Final))
+        chi_1 = qpt(U_i_s, op_basis)
+        chi_2 = qpt(U_f_s, op_basis)
+
+
+        fig_1 = plt.figure(figsize = (6,6))
+        fig_1 = qpt_plot_combined(chi_1, op_label, fig=fig_1, threshold=0.001, title = 'Target Unitary Gate ')
+
+        fig_2 = plt.figure(figsize = (6, 6))
+        fig_2 = qpt_plot_combined(chi_2, op_label, fig = fig_2, threshold = 0.001, title = 'Final Unitary after Optimization')
+
+        plt.show()
 
     if Plot_du == True: # Plot Gradient 
 
