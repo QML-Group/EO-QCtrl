@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import unitary_group
+from functions import * 
 
 """
 
@@ -12,67 +12,13 @@ Work in Progress
 
 """
 
-def tensor(a, b):
-    """
-    Returns tensor product between two matrices
-    """
+T = 2 * np.pi
 
-    return np.kron(a, b)
+Timesteps = 500
 
-def identity(N):
-    """
-    Returns Identity Matrix with Dimension 'N'
-    """
+GRAPE_Iterations = 100
 
-    return np.identity(N)
-
-def sigmax():
-    """
-    Returns Pauli-x Matrix 
-    """
-
-    return np.array([[0,1],
-                     [1,0]])
-
-def sigmay():
-    """
-    Returns Pauli-y Matrix 
-    """
-
-    return np.array([[0, -1j],
-                     [1j, 0]])
-
-def sigmaz():
-    """
-    Returns Pauli-z Matrix 
-    """
-
-    return np.array([[1, 0],
-                     [0, -1]])
-
-def cnot():
-    """
-    Returns CNOT Unitary Gate 
-    """
-
-    return np.array([[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, 0, 1],
-                     [0, 0, 1, 0]])
-
-def rand_unitary(N):
-    """
-    Returns N-Dimenstional Random Unitary 
-    """
-
-    x = unitary_group.rvs(N)
-    y = np.dot(x, x.conj().T)
-
-    return y
-
-H_Static_1 = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
-
-H_Static_2 = 1 * np.pi * tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz()) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 2 Inlcuding Interaction Term
+H_Static_Ising = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
 
 U_Target_CNOT = cnot()
 

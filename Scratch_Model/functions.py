@@ -1,15 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-#from scipy.linalg import expm
 from scipy.sparse.linalg import expm
 from scipy.optimize import minimize
-from scipy.optimize import Bounds
 from scipy.optimize import basinhopping
-import random as rd
 import scipy.sparse as sp
 from alive_progress import alive_bar
-import time
-from qutip.sparse import sp_expm
+from scipy.stats import unitary_group
 
 """
 
@@ -22,7 +18,68 @@ Work in Progress
 
 """
 
-def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
+def tensor(a, b):
+    """
+    Returns tensor product between two matrices
+    """
+
+    return np.kron(a, b)
+
+def identity(N):
+    """
+    Returns Identity Matrix with Dimension 'N'
+    """
+
+    return np.identity(N)
+
+def sigmax():
+    """
+    Returns Pauli-x Matrix 
+    """
+
+    return np.array([[0,1],
+                     [1,0]])
+
+def sigmay():
+    """
+    Returns Pauli-y Matrix 
+    """
+
+    return np.array([[0, -1j],
+                     [1j, 0]])
+
+def sigmaz():
+    """
+    Returns Pauli-z Matrix 
+    """
+
+    return np.array([[1, 0],
+                     [0, -1]])
+
+def cnot():
+    """
+    Returns CNOT Unitary Gate 
+    """
+
+    return np.array([[1, 0, 0, 0],
+                     [0, 1, 0, 0],
+                     [0, 0, 0, 1],
+                     [0, 0, 1, 0]])
+
+def rand_unitary(N):
+    """
+    Returns N-Dimenstional Random Unitary 
+    """
+
+    x = unitary_group.rvs(N)
+    y = np.dot(x, x.conj().T)
+
+    return y
+
+def overlap(A, B):
+    return np.trace(A.conj().T @ B) / A.shape[0]
+
+def Calculate_Unitary_Scipy(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
 
     """
     Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
@@ -65,90 +122,6 @@ def Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time
         Unitary_Total = x @ Unitary_Total
 
     return Unitary_Total
-
-def Calculate_Unitary_Manual(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
-
-    """
-    Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
-
-    Parameters
-    ----------
-
-    H_Static : Static/Drift Hamiltonian Term
-
-    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields 
-
-    Control_Pulses : The Control Parameters for each term in "H_Control"
-
-    Timesteps : Number of timesteps 'N for time discretization
-
-    Total_Time : Total Unitary Gate Time
-
-    Returns 
-    ----------
-
-    Unitary_Total : Unitary Gate based on input parameters 
-
-    """
-
-    time = np.linspace(0, Total_Time, Timesteps+1)
-    
-    H_Total = 0
-    U_Total = []
-
-    for i in range(Timesteps-1):
-        dt = time[i+1] - time[i]
-        H_Total = H_Static
-        for j in range(len(H_Control)):
-            H_Total += Control_Pulses[j, i] * H_Control[j]
-        U = expm(-1j*H_Total*dt)
-        U_Total.append(U)
-    
-    Unitary_Total = np.eye(4,4)
-    for x in U_Total:
-        Unitary_Total = x @ Unitary_Total
-
-    return Unitary_Total
-
-def Calculate_Unitary_List(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time):
-
-    """
-    Calculates Unitary based on Static Hamiltonian, Control Hamiltonian, and control parameters
-
-    Parameters
-    ----------
-
-    H_Static : Static/Drift Hamiltonian Term
-
-    H_Control : Control Hamiltonian containing operators that can be tuned in the Hamiltonian via the control fields 
-
-    Control_Pulses : The Control Parameters for each term in "H_Control"
-
-    Timesteps : Number of timesteps 'N for time discretization
-
-    Total_Time : Total Unitary Gate Time
-
-    Returns 
-    ----------
-
-    Unitary_Total : Unitary Gate based on input parameters 
-
-    """
-
-    time = np.linspace(0, Total_Time, Timesteps+1)
-    
-    H_Total = 0
-    U_Total = []
-
-    for i in range(Timesteps-1):
-        dt = time[i+1] - time[i]
-        H_Total = H_Static
-        for j in range(len(H_Control)):
-            H_Total += Control_Pulses[j, i] * H_Control[j]
-        U = expm(-1j*H_Total*dt)
-        U_Total.append(U)
-
-    return U_Total
 
 def Calculate_Fidelity(U_Target, U):
 
@@ -205,16 +178,15 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
         
         for j in range(len(H_Control)):
             H_T += Control_Pulses[j, i] * H_Control[j] 
-            #EC += np.abs(Control_Pulses[j, i] * np.linalg.norm(H_Control[j])) * dt
        
-        H_T += H_Static 
+        #H_T += H_Static  # Optionally include Static Hamiltonian
 
         H_T_Norm.append(np.linalg.norm(H_T))
 
     EC = np.sum(H_T_Norm) * stepsize
     return EC
 
-def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
+def Run_Scipy_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
 
     """
     This Function Implements an Optimization algorithmn using NumPy and SciPy in Python
@@ -277,7 +249,7 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
 
         """
 
-        U_Final = Calculate_Unitary(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary g
+        U_Final = Calculate_Unitary_Scipy(H_Static, H_Control, Control_Pulses, Timesteps, Total_Time) # Calculate Final Unitary g
 
         Error = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity 
 
@@ -295,19 +267,14 @@ def Run_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimiza
     u = np.zeros((K * N))
 
     result = minimize(Calculate_Cost_Function, u, method = Optimization_Method)
-    #result = basinhopping(Calculate_Cost_Function, u)
 
-    Final_Unitary = Calculate_Unitary(H_Static, H_Control, result['x'], Timesteps, Total_Time)
+    Final_Unitary = Calculate_Unitary_Scipy(H_Static, H_Control, result['x'], Timesteps, Total_Time)
 
     Energetic_Cost = CalculateEnergeticCost(result['x'], H_Static, H_Control, Timesteps, Total_Time)
-    print("Energetic Cost is:", Energetic_Cost)
 
     return result['fun'], result['x'], Final_Unitary 
 
-def overlap(A, B):
-    return np.trace(A.conj().T @ B) / A.shape[0]
-
-def grape_iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
+def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
 
     """
     Perform one iteration of the GRAPE algorithm 
@@ -432,32 +399,32 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
     if eps_e is None:
         eps_e = 0.1 * (2 * np.pi) / (times[-1]) # Set eps value
 
-    M = len(times)
-    J = len(H_Control)
+    M = len(times) # Grab total time steps
+    J = len(H_Control) # Grab number of control parameters 
 
-    u = np.zeros((R, J, M))
+    u = np.zeros((R, J, M)) # Initialize control parameter matrix to all zeros
 
-    du_max_per_iteration = np.zeros((R - 1, J))
+    du_max_per_iteration = np.zeros((R - 1, J)) # Initialize gradient matrix 
 
-    with alive_bar(R - 1) as bar:
-        for r in range(R - 1):
-            bar()
-            dt = times[1] - times[0]
+    with alive_bar(R - 1) as bar: # Start Progress Bar
 
-            def _H_idx(idx):
+        for r in range(R - 1): # Iterate over all GRAPE Iterations
+
+            bar() # Call progress bar
+            dt = times[1] - times[0] # Grab timestep assuming all timesteps to be equal 
+
+            def _H_idx(idx): # Define function to calculate total Hamiltonian
                 return H_Static + sum([u[r, j, idx] * H_Control[j] for j in range(J)])
 
-            #U_list = Calculate_Unitary_List(H_Static, H_Control, u[r], M, times[-1])
+            U_list = [expm(-1j * _H_idx(idx) * dt) for idx in range(M - 1)] # Calculate Unitary from Total Hamiltonian
 
-            U_list = [expm(-1j * _H_idx(idx) * dt) for idx in range(M - 1)]
+            U_f_list = [] # Initialize forward propagator matrix
+            U_b_list = [] # Initialize backward propagator matrix 
 
-            U_f_list = []
-            U_b_list = []
+            U_f = sp.eye(*(U_Target.shape)) # Initialize start value
+            U_b = sp.eye(*(U_Target.shape)) # Initialize start value
 
-            U_f = sp.eye(*(U_Target.shape))
-            U_b = sp.eye(*(U_Target.shape))
-
-            for n in range(M - 1):
+            for n in range(M - 1): # Loop over all timesteps to calculate forward and backward propagators 
 
                 U_f = U_list[n] @ U_f
                 U_f_list.append(U_f)
@@ -465,16 +432,12 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
                 U_b_list.insert(0, U_b)
                 U_b = U_list[M - 2 - n].T.conj() @ U_b
 
-            #print(u)
-
-            du_max_per_iteration[r] = grape_iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
+            du_max_per_iteration[r] = Grape_Iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
                                                     dt = dt, eps_f = eps_f, eps_e = eps_e, w_f = w_f, w_e = w_e)
             
-
-
     return u, U_f_list[-1], du_max_per_iteration
 
-def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
+def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
 
     """
     Runs GRAPE algorithm and returns the control pulses, final unitary, Fidelity, and Energetic Cost for the Hamiltonian operators in H_Control
@@ -523,25 +486,21 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
     """
 
     time = np.linspace(0, T, Timesteps) # Define total time space
-
-    eps_f = 2 * np.pi * 1 # GRAPE step size fidelity
-
-    eps_e = 2 * np.pi * 1 # GRAPE step size energy
     
-    result, U_Final, du_list = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
+    Control_Fields, U_Final, du_list = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
                                                 w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
     
-    F = abs(overlap(U_Target, U_Final)) ** 2 # Compute Fidelity (absolute overlap squared)
-    F_2 = Calculate_Fidelity(U_Target, U_Final)
-    #EC = CalculateEnergeticCost(result[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
+    Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity
+
+    EC = CalculateEnergeticCost(Control_Fields[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
     
-    if Plot_Control_Field == True: # Plot control fields 
+    if Plot_Control_Field == True: # Plot Control Fields 
 
         fig, ax = plt.subplots(len(H_Control))
 
         for i in range(len(H_Control)):
 
-            ax[i].plot(time, result[-1, i, :], label = f"{H_Labels[i]}")
+            ax[i].plot(time, Control_Fields[-1, i, :], label = f"{H_Labels[i]}")
             ax[i].set(xlabel = "Time", ylabel = f"{H_Labels[i]}")
         
         plt.subplot_tool()
@@ -551,7 +510,7 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
 
         print("Feature to be added")
 
-    if Plot_du == True:
+    if Plot_du == True: # Plot Gradient 
 
         iteration_space = np.linspace(1, R - 1, R - 1)
 
@@ -565,5 +524,5 @@ def Calculate_Optimal_Control_Pulses(U_Target, H_Static, H_Control, H_Labels, R,
         plt.grid()
         plt.show()
 
-    return result, U_Final, du_list, F_2
+    return Control_Fields, U_Final, du_list, Fidelity
 
