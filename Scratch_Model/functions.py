@@ -7,6 +7,7 @@ import scipy.sparse as sp
 from alive_progress import alive_bar
 from scipy.stats import unitary_group
 from qutip import to_super, qpt, qpt_plot_combined, Qobj
+from qutip import rand_unitary
 
 
 """
@@ -68,15 +69,16 @@ def cnot():
                      [0, 0, 0, 1],
                      [0, 0, 1, 0]])
 
-def rand_unitary(N):
+def Generate_Rand_Unitary(N):
     """
     Returns N-Dimenstional Random Unitary 
     """
 
-    x = unitary_group.rvs(N)
-    y = np.dot(x, x.conj().T)
+    x = rand_unitary(N)
+    y = x.full()
+    nparray = np.array(y)
 
-    return y
+    return nparray
 
 def overlap(A, B):
     return np.trace(A.conj().T @ B) / A.shape[0]

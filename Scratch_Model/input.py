@@ -26,7 +26,7 @@ H_Static_Ising = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2)
 
 U_Target_CNOT = cnot()
 
-U_Target_Rand = rand_unitary(4)
+U_Target_Rand = Generate_Rand_Unitary(4)
 
 H_Control_1 =  [tensor(sigmax(), identity(2)), # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
          tensor(sigmay(), identity(2)),
