@@ -276,7 +276,7 @@ def Run_Scipy_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Op
 
     return result['fun'], result['x'], Final_Unitary 
 
-def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
+def Grape_Iteration(U_Target, u, r, J, M, T, U_b_list, U_f_list, H_Control, H_Static, dt, eps_f, eps_e, w_f, w_e):
 
     """
     Perform one iteration of the GRAPE algorithm 
@@ -294,6 +294,8 @@ def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
     J : The number of controls in Control Hamiltonian
 
     M : Number of time steps
+
+    T : Total Time T
 
     U_b_list : Backward propagators of each time (length M)
 
@@ -344,13 +346,15 @@ def Grape_Iteration(U_Target, u, r, J, M, U_b_list, U_f_list, H_Control, H_Stati
 
             du_e /= (2 * np.trace(denom) ** (1/2)) # Combine numerator and denominator and take trace + square root (^(1/2))
 
-            du_t = du_f + du_e # Store total gradient (addition of Fidelity and Energy Gradient)
+            du_e_norm = du_e / (T * (np.linalg.norm(H_Static) + np.linalg.norm(np.sum(H_Control))) )
+
+            du_t = du_f + du_e_norm # Store total gradient (addition of Fidelity and Energy Gradient)
 
             du_list[j, m] = du_t.real # Update list with all gradients
 
             max_du_list[j] = np.max(du_list[j]) # Calculate maximum and store in max gradient array
 
-            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
+            u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e_norm.real # Update parameters in next GRAPE iteration using Fidelity and Energy Gradient
 
     for j in range(J):
         u[r + 1, j, M - 1] = u[r + 1, j, M - 2] 
@@ -433,7 +437,7 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
                 U_b_list.insert(0, U_b)
                 U_b = U_list[M - 2 - n].T.conj() @ U_b
 
-            du_max_per_iteration[r] = Grape_Iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
+            du_max_per_iteration[r] = Grape_Iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, T = times[-1], U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
                                                     dt = dt, eps_f = eps_f, eps_e = eps_e, w_f = w_f, w_e = w_e)
             
     return u, U_f_list[-1], du_max_per_iteration

@@ -16,7 +16,7 @@ T = 2 * np.pi
 
 Timesteps = 500
 
-GRAPE_Iterations = 100
+GRAPE_Iterations = 200
 
 eps_f = 2 * np.pi
 
