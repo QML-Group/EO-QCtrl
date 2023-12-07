@@ -188,7 +188,10 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
         H_T_Norm.append(np.linalg.norm(H_T))
 
     EC = np.sum(H_T_Norm) * stepsize
-    return EC
+
+    EC_Normalized = EC / (Total_Time * np.linalg.norm(np.sum(H_Control)))
+
+    return EC_Normalized
 
 def Run_Scipy_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
 
@@ -413,6 +416,10 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
 
     du_max_per_iteration = np.zeros((R - 1, J)) # Initialize gradient matrix 
 
+    Cost_Function_Array = []
+    Infidelity_Array = []
+    Energy_Array = []
+
     with alive_bar(R - 1) as bar: # Start Progress Bar
 
         for r in range(R - 1): # Iterate over all GRAPE Iterations
@@ -442,9 +449,14 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
             du_max_per_iteration[r] = Grape_Iteration(U_Target = U_Target, u = u, r = r, J = J, M = M, T = times[-1], U_b_list = U_b_list, U_f_list = U_f_list, H_Control = H_Control, H_Static = H_Static,
                                                     dt = dt, eps_f = eps_f, eps_e = eps_e, w_f = w_f, w_e = w_e)
             
-    return u, U_f_list[-1], du_max_per_iteration
+            Cost_Function = w_f * (1-Calculate_Fidelity(U_Target, U_f_list[-1])) + w_e * CalculateEnergeticCost(u[r], H_Static, H_Control, M, times[-1])
+            Cost_Function_Array.append(Cost_Function)
+            Infidelity_Array.append(1-Calculate_Fidelity(U_Target, U_f_list[-1]))
+            Energy_Array.append(CalculateEnergeticCost(u[r], H_Static, H_Control, M, times[-1]))
+            
+    return u, U_f_list[-1], du_max_per_iteration, Cost_Function_Array, Infidelity_Array, Energy_Array
 
-def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False):
+def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False, Plot_Cost_Function = False):
 
     """
     Runs GRAPE algorithm and returns the control pulses, final unitary, Fidelity, and Energetic Cost for the Hamiltonian operators in H_Control
@@ -494,7 +506,7 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
 
     time = np.linspace(0, T, Timesteps) # Define total time space
     
-    Control_Fields, U_Final, du_list = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
+    Control_Fields, U_Final, du_list, cost_fn, infidelity, energy = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
                                                 w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
     
     Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity
@@ -541,6 +553,20 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
         plt.xlabel("GRAPE Iteration Number")
         plt.ylabel("Maximum Gradient over Time")
         plt.title("Maximum Gradient over Time vs. GRAPE Iteration Number")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+    if Plot_Cost_Function == True:
+
+        iteration_space = np.linspace(1, R - 1, R - 1)
+        plt.plot(iteration_space, cost_fn, label = f"Cost Function, $w_f$ = {w_f}, $w_e$ = {w_e}")
+        plt.plot(iteration_space, infidelity, label = f"Infidelity (1-F)")
+        plt.plot(iteration_space, energy, label = f"Normalized Energetic Cost")
+        plt.axhline(y = 0, color = "black", linestyle = "-")
+        plt.xlabel("GRAPE iteration number")
+        plt.ylabel("Cost Function")
+        plt.title("Cost Function, Infidelity, and Energetic Cost vs. GRAPE Iteration Number")
         plt.legend()
         plt.grid()
         plt.show()

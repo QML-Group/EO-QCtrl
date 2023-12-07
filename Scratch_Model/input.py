@@ -16,11 +16,11 @@ T = 2 * np.pi
 
 Timesteps = 500
 
-GRAPE_Iterations = 200
+GRAPE_Iterations = 2000
 
-eps_f = 2 * np.pi
+eps_f = 1
 
-eps_e = 2 * np.pi
+eps_e = 100
 
 H_Static_Ising = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
 

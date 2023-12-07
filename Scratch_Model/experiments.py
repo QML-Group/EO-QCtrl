@@ -2,9 +2,45 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functions import * 
 from input import * 
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
 
 """
 This file is intended for experiments using "input.py" and "functions.py"
 
 """
 
+Target_Unitary = Generate_Rand_Unitary(4)
+
+eps_e = [0.1, 1, 10, 100, 1000] 
+eps_f = [0.001, 0.01, 0.1, 1, 10] 
+
+xv, yv = np.meshgrid(eps_e, eps_f)
+
+EnergyArray = np.zeros((len(eps_e), len(eps_f)))
+FidelityArray = np.zeros((len(eps_e), len(eps_f)))
+
+for index_eps_e, value_eps_e in enumerate(eps_e):
+
+    for index_eps_f, value_eps_f in enumerate(eps_f):
+
+        Control_Pulses, Final_Unitary, Gradient_List, FidelityArray[index_eps_e, index_eps_f], EnergyArray[index_eps_e, index_eps_f] = Run_GRAPE_Simulation(Target_Unitary, H_Static_Ising, H_Control_4,
+                                                                                                                                                            H_Labels_4, GRAPE_Iterations, Timesteps, T, w_f = 0.5, w_e = 0.5,
+                                                                                                                                                            eps_f = value_eps_f, eps_e = value_eps_e)
+        
+InfidelityArray = np.ones((len(eps_e), len(eps_f))) - FidelityArray
+
+CostFunctionArray = 0.5 * InfidelityArray + 0.5 * EnergyArray
+
+
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+surface_cost_fn = ax.plot_surface(xv, yv, CostFunctionArray, cmap = cm.coolwarm, linewidth = 0, antialiased = False, label = "Cost Function")
+
+ax.set_xlabel("$\epsilon_e$")
+ax.set_ylabel("$\epsilon_f$")
+ax.set_zlabel("Cost Function")
+fig.colorbar(surface_cost_fn, shrink=0.5, aspect=5)
+
+
+plt.show()
