@@ -10,6 +10,27 @@ This file is intended for experiments using "input.py" and "functions.py"
 
 """
 
+# Pareto Front Plots
+
+weights = np.arange(0, 1, 0.1)
+
+eps_e_optimal = 100
+
+eps_f_optimal = 0.1
+
+Target_Unitary = Generate_Rand_Unitary(4)
+
+Energy
+
+
+
+
+
+
+
+# Cost Function versus eps_e and eps_f experiment
+"""
+
 Target_Unitary = Generate_Rand_Unitary(4)
 
 eps_e = [0.1, 1, 10, 100, 1000] 
@@ -44,3 +65,4 @@ fig.colorbar(surface_cost_fn, shrink=0.5, aspect=5)
 
 
 plt.show()
+"""

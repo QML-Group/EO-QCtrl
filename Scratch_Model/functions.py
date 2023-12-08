@@ -150,7 +150,7 @@ def Calculate_Fidelity(U_Target, U):
     
     return F
 
-def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time):
+def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total_Time, Return_Normalized = False):
 
     """
     Calculate Energetic Cost of certain Unitary 
@@ -191,8 +191,16 @@ def CalculateEnergeticCost(Control_Pulses, H_Static, H_Control, Timesteps, Total
 
     EC_Normalized = EC / (Total_Time * np.linalg.norm(np.sum(H_Control)))
 
-    return EC_Normalized
+    if Return_Normalized == True:
 
+        Value = EC_Normalized
+
+    elif Return_Normalized == False:
+
+        Value = EC
+
+    return Value
+    
 def Run_Scipy_Optimizer(U_Target, H_Static, H_Control, Total_Time, Timesteps, Optimization_Method, Weight_F, Weight_EC):
 
     """
@@ -366,7 +374,7 @@ def Grape_Iteration(U_Target, u, r, J, M, T, U_b_list, U_f_list, H_Control, H_St
 
     return max_du_list
 
-def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_f = None, eps_e = None):
+def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, Return_Normalized, eps_f = None, eps_e = None):
 
     """
     Run R iterations of GRAPE algorithm to find optimal pulses given any Static and Control Hamiltonian
@@ -452,11 +460,11 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, eps_
             Cost_Function = w_f * (1-Calculate_Fidelity(U_Target, U_f_list[-1])) + w_e * CalculateEnergeticCost(u[r], H_Static, H_Control, M, times[-1])
             Cost_Function_Array.append(Cost_Function)
             Infidelity_Array.append(1-Calculate_Fidelity(U_Target, U_f_list[-1]))
-            Energy_Array.append(CalculateEnergeticCost(u[r], H_Static, H_Control, M, times[-1]))
+            Energy_Array.append(CalculateEnergeticCost(u[r], H_Static, H_Control, M, times[-1], Return_Normalized = Return_Normalized))
             
     return u, U_f_list[-1], du_max_per_iteration, Cost_Function_Array, Infidelity_Array, Energy_Array
 
-def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False, Plot_Cost_Function = False):
+def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, T, w_f, w_e, eps_f, eps_e, Return_Normalized, Plot_Control_Field = False, Plot_Tomography = False, Plot_du = False, Plot_Cost_Function = False):
 
     """
     Runs GRAPE algorithm and returns the control pulses, final unitary, Fidelity, and Energetic Cost for the Hamiltonian operators in H_Control
@@ -507,11 +515,11 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
     time = np.linspace(0, T, Timesteps) # Define total time space
     
     Control_Fields, U_Final, du_list, cost_fn, infidelity, energy = RunGrapeOptimization(U_Target = U_Target, H_Static = H_Static, H_Control = H_Control, R = R, times = time, 
-                                                w_f = w_f, w_e = w_e, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
+                                                w_f = w_f, w_e = w_e, Return_Normalized = Return_Normalized, eps_f = eps_f, eps_e = eps_e) # Run GRAPE Optimization
     
     Fidelity = Calculate_Fidelity(U_Target, U_Final) # Calculate Fidelity
 
-    EC = CalculateEnergeticCost(Control_Fields[-1], H_Static, H_Control, Timesteps, T) # Calculate and store Energetic Cost
+    EC = CalculateEnergeticCost(Control_Fields[-1], H_Static, H_Control, Timesteps, T, Return_Normalized = Return_Normalized) # Calculate and store Energetic Cost
     
     if Plot_Control_Field == True: # Plot Control Fields 
 
