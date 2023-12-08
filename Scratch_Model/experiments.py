@@ -20,7 +20,31 @@ eps_f_optimal = 0.1
 
 Target_Unitary = Generate_Rand_Unitary(4)
 
-Energy
+EnergyList = list()
+
+InfidelityList = list()
+
+for index, value in enumerate(weights):
+
+    print(f"{index/len(weights) * 100} \%")
+
+    Control_Pulses, Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(Target_Unitary, H_Static_Ising, 
+                                                                                          H_Control_4, H_Labels_4,
+                                                                                          GRAPE_Iterations, Timesteps,
+                                                                                          T, 1 - value, value, eps_f_optimal, eps_e_optimal,
+                                                                                          Return_Normalized = False)
+    EnergyList.append(Energy)
+    InfidelityList.append(1- Fidelity)
+
+MaxEnergyList = EnergyList / max(EnergyList)
+
+plt.plot(MaxEnergyList, InfidelityList, ls = '-', color = 'red', marker = 'd', label = 'Pareto Front')
+plt.xlabel("Normalized Energetic Cost by Max Energy")
+plt.ylabel("Infidelity")
+plt.title(f"Pareto Front Using $\epsilon_e$ = {eps_e_optimal}, $\epsilon_f$ = {eps_f_optimal}")
+plt.legend()
+plt.grid()
+plt.show()
 
 
 
