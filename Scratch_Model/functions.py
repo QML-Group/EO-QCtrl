@@ -579,5 +579,5 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
         plt.grid()
         plt.show()
 
-    return Control_Fields, U_Final, du_list, Fidelity, EC
+    return Control_Fields[-1], U_Final, du_list, Fidelity, EC
 
