@@ -14,43 +14,51 @@ This file is intended for experiments using "input.py" and "functions.py"
 
 weights = np.arange(0, 1, 0.1)
 
+number_of_simulations = 5
+
 eps_e_optimal = 100
 
 eps_f_optimal = 0.1
 
-Target_Unitary = Generate_Rand_Unitary(4)
+EnergyList = np.zeros((number_of_simulations, len(weights)))
+FidelityList = np.zeros((number_of_simulations, len(weights)))
 
-EnergyList = list()
+for sim in range(number_of_simulations):
 
-InfidelityList = list()
+    Target_Unitary = Generate_Rand_Unitary(4)
 
-for index, value in enumerate(weights):
+    for index, value in enumerate(weights):
 
-    print(f"{index/len(weights) * 100} \%")
+        print(f"{index/len(weights) * 100} \%")
 
-    Control_Pulses, Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(Target_Unitary, H_Static_Ising, 
-                                                                                          H_Control_4, H_Labels_4,
-                                                                                          GRAPE_Iterations, Timesteps,
-                                                                                          T, 1 - value, value, eps_f_optimal, eps_e_optimal,
-                                                                                          Return_Normalized = False)
-    EnergyList.append(Energy)
-    InfidelityList.append(1- Fidelity)
+        Control_Pulses, Final_Unitary, Gradient_List, FidelityList[sim, index], EnergyList[sim, index] = Run_GRAPE_Simulation(Target_Unitary, H_Static_Ising, 
+                                                                                                                                H_Control_4, H_Labels_4,
+                                                                                                                                GRAPE_Iterations, Timesteps,
+                                                                                                                                T, 1 - value, value, eps_f_optimal, eps_e_optimal,
+                                                                                                                                Return_Normalized = False)
 
-MaxEnergyList = EnergyList / max(EnergyList)
+InfidelityList = np.ones((number_of_simulations, len(weights))) - FidelityList
+MaxEnergyList = EnergyList / np.amax(EnergyList)
+InfidelityErrorBars = list()
+EnergyErrorBars = list()
 
-plt.plot(MaxEnergyList, InfidelityList, ls = '-', color = 'red', marker = 'd', label = 'Pareto Front')
-plt.xlabel("Normalized Energetic Cost by Max Energy")
-plt.ylabel("Infidelity")
-plt.title(f"Pareto Front Using $\epsilon_e$ = {eps_e_optimal}, $\epsilon_f$ = {eps_f_optimal}")
+for i in range(len(weights)):
+
+    InfidelityErrorBar = 0.5 * (max(InfidelityList[:, i]) - min(InfidelityList[:, i]))
+    EnergyErrorBar = 0.5 * (max(EnergyList[:, i]) - min(EnergyList[:, i]))
+    InfidelityErrorBars.append(InfidelityErrorBar)
+    EnergyErrorBars.append(EnergyErrorBar)
+
+print(InfidelityErrorBars)
+print(EnergyErrorBars)
+
+plt.errorbar(MaxEnergyList[0], InfidelityList[0], xerr = EnergyErrorBars, yerr = InfidelityErrorBars, ls = '-', color = 'green', marker = 'd', label = 'Pareto Front')
+plt.xlabel("Normalized Energetic Cost")
+plt.ylabel("Infidelity (1-F)")
+plt.title(f"Pareto Front using $\epsilon_e$ = {eps_e_optimal}, $\epsilon_f$ = {eps_f_optimal}")
 plt.legend()
 plt.grid()
 plt.show()
-
-
-
-
-
-
 
 # Cost Function versus eps_e and eps_f experiment
 """
