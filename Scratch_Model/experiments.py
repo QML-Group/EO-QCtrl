@@ -13,6 +13,7 @@ This file is intended for experiments using "input.py" and "functions.py"
 """
 
 # Plotting Control fields with varying weight sets
+"""
 
 eps_e = 100
 eps_f = 1
@@ -41,12 +42,12 @@ plt.xticks(xticks, ['0', '$\pi$', '2 $\pi$'])
 plt.legend()
 plt.subplot_tool()
 plt.show()
-
+"""
 
 # Pareto Front Plots with varying eps_e/eps_f parameter sets
 
-"""
-eps_e_range = [0.1, 1, 10, 100]
+
+eps_e_range = [100, 250, 500]
 weights = np.arange(0, 1, 0.1)
 eps_f_optimal = 1
 Target_Unitary = Generate_Rand_Unitary(4)
@@ -77,7 +78,7 @@ plt.title(f"Pareto Front for different $\epsilon_e$")
 plt.legend()
 plt.grid()
 plt.show()
-"""
+
 # Pareto Front Plots
 
 """
