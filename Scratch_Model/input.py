@@ -16,7 +16,7 @@ T = 2 * np.pi
 
 Timesteps = 500
 
-GRAPE_Iterations = 500
+GRAPE_Iterations = 100
 
 eps_f = 1
 
@@ -27,6 +27,8 @@ H_Static_Ising = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2)
 U_Target_CNOT = cnot()
 
 U_Target_Rand = Generate_Rand_Unitary(4)
+
+U_Target_Identity = tensor(identity(2), identity(2))
 
 H_Control_1 =  [tensor(sigmax(), identity(2)), # General 2 qubit Hamiltonian with X, Y, and Z interaction terms 
          tensor(sigmay(), identity(2)),
