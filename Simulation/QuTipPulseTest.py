@@ -61,3 +61,8 @@ Fidelity = fc.Calculate_Fidelity(U_Target, Unitary_Total) # Calculate Fidelity b
 print("Target Unitary is: ", U_Target)
 print("Final Unitary is: ", Unitary_Total)
 print("Fidelity is: ", Fidelity)
+
+# Optional : Plot Control Pulses
+
+#simulator.plot_pulses()
+#plt.show()
