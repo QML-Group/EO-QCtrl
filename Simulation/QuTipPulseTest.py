@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from qutip.qip.device import Processor
 import functions as fc
 
+Run_Analytical = False # Define to run analytical or not 
 
 N_q = 2 # Define number of qubits
 
@@ -17,7 +18,7 @@ T = 2 * np.pi # Total pulse duration
 
 timespace = np.linspace(0, T, Timesteps) # Define time space based on total time and number of timesteps
 
-U_Target = fc.Generate_Rand_Unitary(4) # Define target unitary 
+U_Target = fc.cnot() # Define target unitary 
 
 H_Drift_Qutip = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 
@@ -48,21 +49,27 @@ new_timespace = np.append(timespace, timespace[-1]) # Change timespace for forma
 
 simulator.set_all_tlist(new_timespace) # Pass timesteps for the pulses to Processor 
 
-test = simulator.run_analytically() # Run the Simulation on the Processor 
+if Run_Analytical == True: 
 
-Unitary_Total = np.eye(4,4) # Initialize Final Unitary 
+    test = simulator.run_analytically() # Run the Simulation on the Processor 
 
-for x in test:
-    Unitary_Total = x * Unitary_Total # Calculate final Unitary by multiplying all propagators 
+    Unitary_Total = np.eye(4,4) # Initialize Final Unitary 
 
-Fidelity = fc.Calculate_Fidelity(U_Target, Unitary_Total) # Calculate Fidelity between the Target and Final Unitary 
+    for x in test:
+        Unitary_Total = x * Unitary_Total # Calculate final Unitary by multiplying all propagators 
 
-# Print statements 
-print("Target Unitary is: ", U_Target)
-print("Final Unitary is: ", Unitary_Total)
-print("Fidelity is: ", Fidelity)
+    Fidelity = fc.Calculate_Fidelity(U_Target, Unitary_Total) # Calculate Fidelity between the Target and Final Unitary 
 
-# Optional : Plot Control Pulses
+    # Print statements 
+    print("Target Unitary is: ", U_Target)
+    print("Final Unitary is: ", Unitary_Total)
+    print("Fidelity is: ", Fidelity)
 
-#simulator.plot_pulses()
-#plt.show()
+if Run_Analytical == False:
+
+    Initial_State = basis(4, 2) 
+
+    result = simulator.run_state(init_state = Initial_State)
+
+    print(result.states[-1])
+    print(result.states[-1][3] * result.states[-1][3].conj())
