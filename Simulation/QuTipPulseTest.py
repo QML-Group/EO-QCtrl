@@ -5,14 +5,15 @@ from qutip_qip.operations import expand_operator, toffoli
 import matplotlib.pyplot as plt 
 from qutip.qip.device import Processor
 import functions as fc
+import qutip.visualization as vz
 
 Run_Analytical = False # Define to run analytical or not 
 
 N_q = 2 # Define number of qubits
 
-Iterations = 50 # Number of GRAPE Iterations
+Iterations = 500 # Number of GRAPE Iterations
 
-Timesteps = 50 # Number of Timesteps
+Timesteps = 500 # Number of Timesteps
 
 T = 2 * np.pi # Total pulse duration
 
@@ -69,10 +70,14 @@ if Run_Analytical == False:
 
     Initial_State = basis(4, 2) 
 
-    result = simulator.run_state(init_state = Initial_State)
+    result = simulator.run_state(init_state = Initial_State, noisy=True)
 
     densitymatrix  = result.states[-1] * result.states[-1].dag()
 
-    plt.imshow(np.array(densitymatrix.full().real))
+    vz.hinton(densitymatrix, xlabels = [r'$\vert 00\rangle$', r'$\vert 01\rangle$', r'$\vert 10\rangle$', r'$\vert 11\rangle$'], 
+              ylabels = [r'$\vert 00\rangle$', r'$\vert 01\rangle$', r'$\vert 10\rangle$', r'$\vert 11\rangle$'])
+    
+    #plt.imshow(np.array(densitymatrix.full().real))
+    #plt.imshow(np.array(densitymatrix.full().imag))
     plt.show()
     print(densitymatrix)
