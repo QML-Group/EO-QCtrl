@@ -1,21 +1,42 @@
 import numpy as np 
-from qutip import basis, fidelity, identity, sigmax, sigmaz, tensor
+from qutip import basis, fidelity, identity, sigmax, sigmaz, tensor, destroy
 from qutip_qip.circuit import QubitCircuit
-from qutip_qip.operations import expand_operator, toffoli
+from qutip_qip.operations import expand_operator, toffoli, snot
 import matplotlib.pyplot as plt 
 from qutip.qip.device import Processor
 import functions as fc
 import qutip.visualization as vz
+from qutip.qip.noise import RandomNoise, DecoherenceNoise, RelaxationNoise
 
 Run_Analytical = False # Define to run analytical or not 
 
+a = destroy(2)
+
+Hadamard = snot()
+
 N_q = 2 # Define number of qubits
+
+w1 = 5e9 # Hz
+
+w2 = 5e9 # Hz
+
+g = 500e6 # Hz
+
+hbar = 1.054e-34 # Js/rad
+
+GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.00, scale = 0.4)
+
+RelaxNoise = RelaxationNoise()
+
+DecoNoise = DecoherenceNoise(c_ops = [a.dag() * a, Hadamard * a.dag() * a * Hadamard])
 
 Iterations = 500 # Number of GRAPE Iterations
 
 Timesteps = 500 # Number of Timesteps
 
 T = 2 * np.pi # Total pulse duration
+
+T2 = 100 # us
 
 timespace = np.linspace(0, T, Timesteps) # Define time space based on total time and number of timesteps
 
@@ -50,6 +71,8 @@ new_timespace = np.append(timespace, timespace[-1]) # Change timespace for forma
 
 simulator.set_all_tlist(new_timespace) # Pass timesteps for the pulses to Processor 
 
+simulator.add_noise(GaussianNoise)
+
 if Run_Analytical == True: 
 
     test = simulator.run_analytically() # Run the Simulation on the Processor 
@@ -70,14 +93,19 @@ if Run_Analytical == False:
 
     Initial_State = basis(4, 2) 
 
-    result = simulator.run_state(init_state = Initial_State, noisy=True)
+    Initial_Density_Matrix  = Initial_State * Initial_State.dag()
+
+    result = simulator.run_state(init_state = Initial_State)
 
     densitymatrix  = result.states[-1] * result.states[-1].dag()
 
     vz.hinton(densitymatrix, xlabels = [r'$\vert 00\rangle$', r'$\vert 01\rangle$', r'$\vert 10\rangle$', r'$\vert 11\rangle$'], 
               ylabels = [r'$\vert 00\rangle$', r'$\vert 01\rangle$', r'$\vert 10\rangle$', r'$\vert 11\rangle$'])
     
-    #plt.imshow(np.array(densitymatrix.full().real))
-    #plt.imshow(np.array(densitymatrix.full().imag))
-    plt.show()
+    vz.plot_wigner_fock_distribution(densitymatrix)
+
     print(densitymatrix)
+
+    simulator.plot_pulses()
+
+    plt.show()
