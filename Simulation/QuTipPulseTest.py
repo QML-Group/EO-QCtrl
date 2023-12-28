@@ -10,9 +10,9 @@ Run_Analytical = False # Define to run analytical or not
 
 N_q = 2 # Define number of qubits
 
-Iterations = 500 # Number of GRAPE Iterations
+Iterations = 50 # Number of GRAPE Iterations
 
-Timesteps = 500 # Number of Timesteps
+Timesteps = 50 # Number of Timesteps
 
 T = 2 * np.pi # Total pulse duration
 
@@ -71,5 +71,8 @@ if Run_Analytical == False:
 
     result = simulator.run_state(init_state = Initial_State)
 
-    print(result.states[-1])
-    print(result.states[-1][3] * result.states[-1][3].conj())
+    densitymatrix  = result.states[-1] * result.states[-1].dag()
+
+    plt.imshow(np.array(densitymatrix.full().real))
+    plt.show()
+    print(densitymatrix)
