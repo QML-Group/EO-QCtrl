@@ -24,7 +24,7 @@ g = 500e6 # Hz
 
 hbar = 1.054e-34 # Js/rad
 
-GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.00, scale = 0.4)
+GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.2, scale = 0.1)
 
 RelaxNoise = RelaxationNoise()
 
@@ -71,7 +71,7 @@ new_timespace = np.append(timespace, timespace[-1]) # Change timespace for forma
 
 simulator.set_all_tlist(new_timespace) # Pass timesteps for the pulses to Processor 
 
-simulator.add_noise(GaussianNoise)
+#simulator.add_noise(GaussianNoise)
 
 if Run_Analytical == True: 
 
