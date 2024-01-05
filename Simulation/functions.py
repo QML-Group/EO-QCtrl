@@ -449,7 +449,7 @@ def RunGrapeOptimization(U_Target, H_Static, H_Control, R, times, w_f, w_e, Retu
             for n in range(M - 1): # Loop over all timesteps to calculate forward and backward propagators 
 
                 U_f = U_list[n] @ U_f
-                U_f_list.append(U_f)
+                U_f_list.append(U_f) 
 
                 U_b_list.insert(0, U_b)
                 U_b = U_list[M - 2 - n].T.conj() @ U_b

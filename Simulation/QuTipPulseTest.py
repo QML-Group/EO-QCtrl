@@ -24,7 +24,7 @@ g = 500e6 # Hz
 
 hbar = 1.054e-34 # Js/rad
 
-GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.2, scale = 0.1)
+GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.0, scale = 0.1)
 
 RelaxNoise = RelaxationNoise()
 
@@ -62,7 +62,7 @@ for operators in H_Control_Qutip:
     simulator.add_control(operators, targets = [0, 1]) # Add the Control Hamiltonian to the Processor 
 
 pulses, final_unitary, du_array, cost_fn_array, infidelity_array, energy_array = fc.RunGrapeOptimization(U_Target, H_Drift_Scratch, H_Control_Scratch, Iterations, timespace, # Calculate the optimized pulses
-                                 w_f = 1, w_e = 0, Return_Normalized = False, eps_f = 1, eps_e = 100)
+                                 w_f = 0.8, w_e = 0.2, Return_Normalized = False, eps_f = 1, eps_e = 100)
 
 for i in range(len(H_Control_Qutip)):
     simulator.pulses[i].coeff = pulses[-1, i] # Pass the pulse amplitudes to the Processor
@@ -71,7 +71,7 @@ new_timespace = np.append(timespace, timespace[-1]) # Change timespace for forma
 
 simulator.set_all_tlist(new_timespace) # Pass timesteps for the pulses to Processor 
 
-#simulator.add_noise(GaussianNoise)
+simulator.add_noise(GaussianNoise)
 
 if Run_Analytical == True: 
 
