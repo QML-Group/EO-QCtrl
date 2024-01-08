@@ -7,6 +7,7 @@ from qutip.qip.device import Processor
 import functions as fc
 import qutip.visualization as vz
 from qutip.qip.noise import RandomNoise, DecoherenceNoise, RelaxationNoise
+from qutip.metrics import fidelity
 
 Run_Analytical = False # Define to run analytical or not 
 
@@ -16,19 +17,15 @@ Hadamard = snot()
 
 N_q = 2 # Define number of qubits
 
-w1 = 5e9 # Hz
+w1 = 2 * np.pi * (10e9) # Hz
 
-w2 = 5e9 # Hz
+w2 = 2 * np.pi * (10e9) # Hz
 
-g = 500e6 # Hz
+CouplingStrength = 2 * np.pi * 20e6# Hz
 
 hbar = 1.054e-34 # Js/rad
 
-GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.0, scale = 0.1)
-
-RelaxNoise = RelaxationNoise()
-
-DecoNoise = DecoherenceNoise(c_ops = [a.dag() * a, Hadamard * a.dag() * a * Hadamard])
+GateTime = 0.3e-6
 
 Iterations = 500 # Number of GRAPE Iterations
 
@@ -36,7 +33,15 @@ Timesteps = 500 # Number of Timesteps
 
 T = 2 * np.pi # Total pulse duration
 
-T2 = 100 # us
+T1 = 100 * T
+
+T2 = 100 * T
+
+GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.0, scale = 0.1) # Loc = Mean ("center" of distribution), Scale = Standard Deviation ("Spread" of the distribution)
+
+RelaxNoise = RelaxationNoise(t1 = T1, t2 = T2, targets = [0, 1])
+
+DecoNoise = DecoherenceNoise(c_ops = [a.dag() * a, Hadamard * a.dag() * a * Hadamard])
 
 timespace = np.linspace(0, T, Timesteps) # Define time space based on total time and number of timesteps
 
@@ -44,7 +49,11 @@ U_Target = fc.cnot() # Define target unitary
 
 H_Drift_Qutip = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 
+H_Drift_Qutip_Realistic  = (hbar * w1)/2 * tensor(sigmaz(), identity(2)) + (hbar * w2)/2 * tensor(identity(2), sigmaz()) + hbar * CouplingStrength * tensor(sigmaz(), sigmaz())
+
 H_Drift_Scratch = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz()) # Define Drift Hamiltonian used for optimization
+
+H_Drift_Scratch_Realistic = (hbar * w1)/2 * fc.tensor(fc.sigmaz(), fc.identity(2)) + (hbar * w2)/2 * fc.tensor(fc.identity(2), sigmaz()) + hbar * CouplingStrength * fc.tensor(fc.sigmaz(), fc.sigmaz())
 
 H_Control_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian used in "Processor"
                    tensor(identity(2), sigmax()),
@@ -62,7 +71,7 @@ for operators in H_Control_Qutip:
     simulator.add_control(operators, targets = [0, 1]) # Add the Control Hamiltonian to the Processor 
 
 pulses, final_unitary, du_array, cost_fn_array, infidelity_array, energy_array = fc.RunGrapeOptimization(U_Target, H_Drift_Scratch, H_Control_Scratch, Iterations, timespace, # Calculate the optimized pulses
-                                 w_f = 0.8, w_e = 0.2, Return_Normalized = False, eps_f = 1, eps_e = 100)
+                                 w_f = 1.0, w_e = 0.0, Return_Normalized = False, eps_f = 1, eps_e = 100)
 
 for i in range(len(H_Control_Qutip)):
     simulator.pulses[i].coeff = pulses[-1, i] # Pass the pulse amplitudes to the Processor
@@ -71,7 +80,7 @@ new_timespace = np.append(timespace, timespace[-1]) # Change timespace for forma
 
 simulator.set_all_tlist(new_timespace) # Pass timesteps for the pulses to Processor 
 
-simulator.add_noise(GaussianNoise)
+simulator.add_noise(RelaxNoise)
 
 if Run_Analytical == True: 
 
@@ -109,3 +118,11 @@ if Run_Analytical == False:
     simulator.plot_pulses()
 
     plt.show()
+
+TargetStateVector = basis(4,3)
+
+TargetDensityMatrix = TargetStateVector * TargetStateVector.dag()
+
+Fidelity = fidelity(densitymatrix, TargetDensityMatrix)
+
+print(f"Fidelity between Target Density Matrix and Actual Density Matrix is: {Fidelity * 100} %")
