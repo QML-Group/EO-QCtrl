@@ -37,8 +37,6 @@ T1 = 100 * T
 
 T2 = 100 * T
 
-GaussianNoise = RandomNoise(dt = 0.001, rand_gen = np.random.normal, loc = 0.0, scale = 0.1) # Loc = Mean ("center" of distribution), Scale = Standard Deviation ("Spread" of the distribution)
-
 RelaxNoise = RelaxationNoise(t1 = T1, t2 = T2, targets = [0, 1])
 
 DecoNoise = DecoherenceNoise(c_ops = [a.dag() * a, Hadamard * a.dag() * a * Hadamard])
