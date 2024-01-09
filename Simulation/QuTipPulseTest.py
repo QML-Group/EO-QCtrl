@@ -27,7 +27,7 @@ hbar = 1.054e-34 # Js/rad
 
 GateTime = 0.3e-6
 
-Iterations = 500 # Number of GRAPE Iterations
+Iterations = 50 # Number of GRAPE Iterations
 
 Timesteps = 500 # Number of Timesteps
 
