@@ -10,7 +10,7 @@ from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
 
-def RunFullSimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control, H_Control_Qutip, H_Labels, Iterations, Timesteps, T_1, T_2, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False):
+def RunFullSimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control, H_Control_Qutip, H_Labels, Iterations, Timesteps, T_1, T_2, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Wigner_Function = False):
 
 
     """
@@ -124,6 +124,12 @@ def RunFullSimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control,
         plt.subplot_tool()
         plt.show()
 
+    if Plot_Wigner_Function == True: # Plot Density Matrix and Wigner Function if True 
+
+        vz.hinton(DM_Simulated)
+        vz.plot_wigner_fock_distribution(DM_Simulated)
+        plt.show()
+
     return SV_Simulated, DM_Simulated, SV_Theoretical, DM_Theoretical, F_Target_Simulated, F_Theory_Simulated
 
 H_Drift_Numpy = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz())
@@ -142,11 +148,39 @@ H_L = [r'$u_{1x}$',
        r'$u_{2x}$', 
        r'$u_{xx}$'] 
 
-TargetUnitary = fc.cnot()
+TargetUnitary = fc.Generate_Rand_Unitary(4)
 
 InitState = basis(4, 2)
 
-SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = RunFullSimulation(TargetUnitary, InitState, H_Drift_Numpy, H_Drift_Qutip, H_C, H_C_Qutip, H_L, 500, 500, 100 * 2 * np.pi, 100 * 2 * np.pi, 1, 0, 1, 100, Plot_Control_Field = True)
+GRAPEIterations = 500
+
+N_t = 500
+
+T1 = 2 * np.pi * 100 
+
+T2 = 2 * np.pi * 100
+
+weight_fidelity = 1
+
+weight_energy  = 0
+
+eps_fidelity = 1 
+
+eps_energy = 100
+
+SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = RunFullSimulation(TargetUnitary, 
+                                                                         InitState, 
+                                                                         H_Drift_Numpy, 
+                                                                         H_Drift_Qutip, 
+                                                                         H_C, 
+                                                                         H_C_Qutip, 
+                                                                         H_L, 
+                                                                         GRAPEIterations, N_t, 
+                                                                         T1, T2, 
+                                                                         weight_fidelity, weight_energy, 
+                                                                         eps_fidelity, eps_energy, 
+                                                                         Plot_Control_Field = True,
+                                                                         Plot_Wigner_Function = True)
 
 
 print(f"Fidelity between Target and Simulated Density Matrix is: {F_Target_Sim * 100} %")
