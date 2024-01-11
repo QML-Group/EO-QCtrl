@@ -10,7 +10,7 @@ from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
 
-def CreateEnvironment(N_q, InitialState, H_Drift, H_Control, Pulses, T_1, T_2, Timesteps):
+def CreateEnvironment(N_q, H_Drift, H_Control, Pulses, T_1, T_2, Timesteps):
 
     T = 2 * np.pi
     Timespace = np.linspace(0, T, Timesteps)

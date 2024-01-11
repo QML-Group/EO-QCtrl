@@ -31,7 +31,7 @@ TargetUnitary = fc.cnot()
 
 InitState = basis(4, 2)
 
-GRAPEIterations = 500
+GRAPEIterations = 5
 
 N_t = 500
 
@@ -48,7 +48,8 @@ eps_fidelity = 1
 eps_energy = 100
 
 
-SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = sim.RunGRAPESimulation(TargetUnitary, 
+SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = sim.RunGRAPESimulation(
+                                                                         TargetUnitary, 
                                                                          InitState, 
                                                                          H_Drift_Numpy, 
                                                                          H_Drift_Qutip, 
