@@ -10,7 +10,57 @@ from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
 
-def RunFullSimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control, H_Control_Qutip, H_Labels, Iterations, Timesteps, T_1, T_2, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Wigner_Function = False):
+def CreateEnvironment(N_q, InitialState, H_Drift, H_Control, Pulses, T_1, T_2, Timesteps):
+
+    T = 2 * np.pi
+    Timespace = np.linspace(0, T, Timesteps)
+    SimulatorTimespace = np.append(Timespace, Timespace[-1])
+
+    targets = []
+    for i in range(N_q):
+        targets.append(i)
+    
+    Noise = RelaxationNoise(t1 = T_1, t2 = T_2)
+
+    Environment = Processor(N = N_q)
+
+    Environment.add_drift(H_Drift, targets = targets)
+
+    for operator in H_Control:
+        Environment.add_control(operator, targets = targets)
+
+    for i in range(len(H_Control)):
+        Environment.pulses[i].coeff = Pulses[i]
+    
+    Environment.set_all_tlist(SimulatorTimespace)
+
+    Environment.add_noise(noise = Noise)
+
+    return Environment
+
+def RunPulses(Environment, InitialState, Pulses):
+
+    for i in range(len(Pulses[0, :])):
+        Environment.pulses[i].coeff = Pulses[i]
+
+    result = Environment.run_state(init_state = InitialState)
+
+    return result
+
+def CalculateFidelityReward(Result, InitialState, U_Target):
+
+    SV_Sim = Result.states[-1]
+    DM_Sim = SV_Sim * SV_Sim.dag()
+
+    Qutip_U_Target = Qobj(U_Target)
+    SV_Target = Qutip_U_Target * InitialState
+    DM_Target = SV_Target * SV_Target.dag()
+
+    r_f = fidelity(DM_Sim, DM_Target)
+
+    return r_f
+
+def RunGRAPESimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control, H_Control_Qutip, H_Labels, Iterations, Timesteps, T_1, T_2, w_f, w_e, eps_f, eps_e, Plot_Control_Field = False, Plot_Wigner_Function = False):
 
 
     """
@@ -131,57 +181,3 @@ def RunFullSimulation(U_Target, InitialState, H_Drift, H_Drift_Qutip, H_Control,
         plt.show()
 
     return SV_Simulated, DM_Simulated, SV_Theoretical, DM_Theoretical, F_Target_Simulated, F_Theory_Simulated
-
-H_Drift_Numpy = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz())
-
-H_Drift_Qutip = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
-
-H_C = [fc.tensor(fc.sigmax(), fc.identity(2)), 
-       fc.tensor(fc.identity(2), fc.sigmax()),
-       fc.tensor(fc.sigmax(), fc.sigmax())]
-
-H_C_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian used in "Processor"
-            tensor(identity(2), sigmax()),
-            tensor(sigmax(), sigmax())]
-
-H_L = [r'$u_{1x}$', 
-       r'$u_{2x}$', 
-       r'$u_{xx}$'] 
-
-TargetUnitary = fc.Generate_Rand_Unitary(4)
-
-InitState = basis(4, 2)
-
-GRAPEIterations = 500
-
-N_t = 500
-
-T1 = 2 * np.pi * 100 
-
-T2 = 2 * np.pi * 100
-
-weight_fidelity = 1
-
-weight_energy  = 0
-
-eps_fidelity = 1 
-
-eps_energy = 100
-
-SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = RunFullSimulation(TargetUnitary, 
-                                                                         InitState, 
-                                                                         H_Drift_Numpy, 
-                                                                         H_Drift_Qutip, 
-                                                                         H_C, 
-                                                                         H_C_Qutip, 
-                                                                         H_L, 
-                                                                         GRAPEIterations, N_t, 
-                                                                         T1, T2, 
-                                                                         weight_fidelity, weight_energy, 
-                                                                         eps_fidelity, eps_energy, 
-                                                                         Plot_Control_Field = True,
-                                                                         Plot_Wigner_Function = True)
-
-
-print(f"Fidelity between Target and Simulated Density Matrix is: {F_Target_Sim * 100} %")
-
