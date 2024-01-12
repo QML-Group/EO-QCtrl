@@ -11,58 +11,43 @@ from qutip.metrics import fidelity
 from qutip import Qobj
 import simulator as sim 
 
-H_Drift_Numpy = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz())
+# Input Parameters
 
 H_Drift_Qutip = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 
-H_C = [fc.tensor(fc.sigmax(), fc.identity(2)), 
-       fc.tensor(fc.identity(2), fc.sigmax()),
-       fc.tensor(fc.sigmax(), fc.sigmax())]
+H_Drift_Scratch = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz()) # Define Drift Hamiltonian used for optimization
 
-H_C_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian used in "Processor"
-            tensor(identity(2), sigmax()),
-            tensor(sigmax(), sigmax())]
+H_Control_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian used in "Processor"
+                   tensor(identity(2), sigmax()),
+                   tensor(sigmax(), sigmax())]
 
-H_L = [r'$u_{1x}$', 
-       r'$u_{2x}$', 
-       r'$u_{xx}$'] 
+H_Control_Scratch = [fc.tensor(fc.sigmax(), fc.identity(2)), # Define Control Hamiltonian used for optimization
+                   fc.tensor(fc.identity(2), fc.sigmax()),
+                   fc.tensor(fc.sigmax(), fc.sigmax())]
 
 TargetUnitary = fc.cnot()
 
-InitState = basis(4, 2)
+N_q = 2
 
-GRAPEIterations = 5
+T = 2 * np.pi
 
-N_t = 500
+T1 = 100 * T
 
-T1 = 2 * np.pi * 100 
+T2 = 100 * T
 
-T2 = 2 * np.pi * 100
+Nt = 500
 
-weight_fidelity = 1
+Ng = 500
 
-weight_energy  = 0
+time = np.linspace(0, T, Nt)
 
-eps_fidelity = 1 
+Initial_State = basis(4, 2)
 
-eps_energy = 100
+# Initialize environment
 
+TestEnvironment = sim.CreateEnvironment(2, H_Drift_Qutip, H_Control_Qutip, T1, T2, Nt)
 
-SV_Sim, DM_Sim, SV_Th, DM_Th, F_Target_Sim, F_Th_Sim = sim.RunGRAPESimulation(
-                                                                         TargetUnitary, 
-                                                                         InitState, 
-                                                                         H_Drift_Numpy, 
-                                                                         H_Drift_Qutip, 
-                                                                         H_C, 
-                                                                         H_C_Qutip, 
-                                                                         H_L, 
-                                                                         GRAPEIterations, N_t, 
-                                                                         T1, T2, 
-                                                                         weight_fidelity, weight_energy, 
-                                                                         eps_fidelity, eps_energy, 
-                                                                         Plot_Control_Field = True,
-                                                                         Plot_Wigner_Function = True)
+pulses, final_unitary, du_array, cost_fn_array, infidelity_array, energy_array = fc.RunGrapeOptimization(TargetUnitary, H_Drift_Scratch, H_Control_Scratch, Ng, time, w_f = 1.0, w_e = 0.0, Return_Normalized = False, eps_f = 1, eps_e = 100)
 
-
-print(f"Fidelity between Target and Simulated Density Matrix is: {F_Target_Sim * 100} %")
+result = sim.RunPulses(TestEnvironment, Initial_State, pulses[-1])
 
