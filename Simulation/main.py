@@ -42,12 +42,3 @@ Ng = 500
 time = np.linspace(0, T, Nt)
 
 Initial_State = basis(4, 2)
-
-# Initialize environment
-
-TestEnvironment = sim.CreateEnvironment(2, H_Drift_Qutip, H_Control_Qutip, T1, T2, Nt)
-
-pulses, final_unitary, du_array, cost_fn_array, infidelity_array, energy_array = fc.RunGrapeOptimization(TargetUnitary, H_Drift_Scratch, H_Control_Scratch, Ng, time, w_f = 1.0, w_e = 0.0, Return_Normalized = False, eps_f = 1, eps_e = 100)
-
-result = sim.RunPulses(TestEnvironment, Initial_State, pulses[-1])
-
