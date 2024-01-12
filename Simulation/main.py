@@ -10,6 +10,7 @@ from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
 import simulator as sim 
+from keras import optimizers 
 
 # Input Parameters
 
@@ -42,3 +43,13 @@ Ng = 500
 time = np.linspace(0, T, Nt)
 
 Initial_State = basis(4, 2)
+
+# Run RL Agent and Training
+
+env = sim.QuantumEnvironmentWrapper(N_q, H_Drift_Qutip, H_Control_Qutip, T1, T2, Nt, Initial_State, TargetUnitary)
+
+ppo_model = sim.PPOModel(env.action_space_size)
+
+ppo_optimizer = optimizers.Adam(learning_rate = 0.001)
+
+sim.train_agent(env, ppo_model, ppo_optimizer, num_episodes = 100)

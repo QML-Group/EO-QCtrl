@@ -25,8 +25,7 @@ class PPOModel(keras.Model):
         return self.dense2(x)
     
 class QuantumEnvironmentWrapper:
-    
-    def __init(self, N_q, H_Drift, H_Control, T_1, T_2, Timesteps, Initial_State, U_Target):
+    def __init__(self, N_q, H_Drift, H_Control, T_1, T_2, Timesteps, Initial_State, U_Target):
         self.environment = self.create_environment(N_q, H_Drift, H_Control, T_1, T_2, Timesteps)
         self.initial_state = Initial_State
         self.state = None
@@ -87,15 +86,6 @@ class QuantumEnvironmentWrapper:
 
         return Environment
     
-    def run_pulses(self, pulses):
-
-        """ Run Pulses on Processor """
-
-        result = self.environment.run_state(init_state = self.state, pulses = pulses)
-        self.state = result.states[-1]
-
-        return result.states[-1], result 
-    
     def generate_initial_state(self):
 
         """ Generate Initial State """
@@ -114,7 +104,7 @@ class QuantumEnvironmentWrapper:
 
         """ Define next step functionality """
 
-        next_state, result  = self.environment.run_pulses(init_state = self.initial_state, Pulses = action)
+        next_state, result  = self.run_pulses(pulses = action)
         self.state = next_state
         return np.array(next_state).flatten(), self.calculate_fidelity_reward(result), False, result
     
@@ -150,6 +140,18 @@ class QuantumEnvironmentWrapper:
         r_f = fidelity(DM_Sim, DM_Target) # Calculate fidelity between simulated and target density matrix as reward
 
         return r_f
+    
+    def run_pulses(self, pulses):
+
+        """ Run Pulses on Processor """
+        print(pulses)
+        for i in range(len(pulses[:, 0])):
+            self.environment.pulses[i].coeff = pulses[i] # Pass all amplitudes in Pulses array to the Processor 
+
+        result = self.environment.run_state(init_state = self.initial_state, pulses = pulses)
+        self.state = result.states[-1]
+
+        return result.states[-1], result 
 
     
 def ppo_training(model, optimizer, states, actions, rewards, next_states, dones, discount_factor = 0.99, epsilon = 0.2, epochs = 10):
@@ -211,13 +213,18 @@ def train_agent(environment, model, optimizer, num_episodes = 1000, max_timestep
     optimizer = optimizers.Adam(learning_rate = 0.001)
 
     for episode in range(num_episodes):
-        states, actions, rewards, next_states = [], [], [], [], []
+        states, actions, rewards, next_states = [], [], [], []
         timestep = 0
 
         while timestep < max_timestep_per_episode:
 
+            def softmax(x):
+                exp_x = np.exp(x - np.max(x))  # Avoid numerical instability by subtracting the max
+                return exp_x / exp_x.sum(axis=0)
+            
             state_array = np.array(state).flatten()
-            action_probs = model.predict(state_array.reshape(1, -1))[0]
+            action_probs = softmax(model.predict(state_array.reshape(1, -1))[0])
+            #action_probs = action_probs / np.sum(action_probs)
             action = np.random.choice(range(action_space_size), p = action_probs)
 
             next_state, result = environment.step(action)
