@@ -152,8 +152,7 @@ class QuantumEnvironmentWrapper:
         self.state = result.states[-1]
 
         return result.states[-1], result 
-
-    
+  
 def ppo_training(model, optimizer, states, actions, rewards, next_states, dones, discount_factor = 0.99, epsilon = 0.2, epochs = 10):
     
     states = np.array(states)
