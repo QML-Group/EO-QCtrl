@@ -1,7 +1,5 @@
 import numpy as np 
-import scipy as sp 
 from qutip import basis, fidelity, identity, sigmax, sigmaz, sigmay, tensor, destroy, to_super, qpt, qpt_plot_combined
-from qutip_qip.circuit import QubitCircuit
 from qutip_qip.operations import expand_operator, toffoli, snot
 import matplotlib.pyplot as plt 
 from qutip.qip.device import Processor
@@ -10,9 +8,6 @@ import qutip.visualization as vz
 from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
-import tensorflow as tf 
-from tensorflow.python import keras
-from keras import optimizers 
 from alive_progress import alive_bar
 from scipy.sparse.linalg import expm
 
