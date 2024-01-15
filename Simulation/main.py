@@ -34,22 +34,22 @@ epsilon_e = 100
 
 # Test Quantum Environment Class
 
-Environment = QuantumEnvironment(N_q, H_Drift_Qutip, H_Control_Qutip, H_Labels, T1, T2, Initial_State, TargetUnitary, Nt, T, Ng)
+Environment = QuantumEnvironment(N_q, H_Drift_Qutip, H_Control_Qutip, H_Labels, T1, T2, Initial_State, TargetUnitary, Nt, T, Ng) # Create instance of Quantum Environment
 
-pulses = Environment.run_grape_optimization(weight_fidelity, weight_energy, epsilon_f, epsilon_e)
+pulses = Environment.run_grape_optimization(weight_fidelity, weight_energy, epsilon_f, epsilon_e) # Calculate pulses by EO-GRAPE algorithm
 
-energy = Environment.calculate_energetic_cost(pulses)
+energy = Environment.calculate_energetic_cost(pulses) # Calculate energetic cost of pulses
 
-result = Environment.run_pulses(pulses, plot_pulses = True)
+result = Environment.run_pulses(pulses, plot_pulses = True) # Run the EO-GRAPE pulses on the environment
 
-reward = Environment.calculate_fidelity_reward(result, plot_result = True)
+reward = Environment.calculate_fidelity_reward(result, plot_result = True) # Calculate the Fidelity reward of this set of pulses
 
-Environment.plot_grape_pulses(pulses)
+Environment.plot_grape_pulses(pulses) # Plot the EO-GRAPE generated pulses
 
-Environment.plot_tomography()
+Environment.plot_tomography() # Plot Tomography of the final unitary and target unitary 
 
-Environment.plot_du()
+Environment.plot_du() # Plot gradient versus GRAPE iterations
 
-Environment.plot_cost_function()
+Environment.plot_cost_function() # Plot cost function versus GRAPE iterations
 
-print(f"Energetic cost is: {energy}, Fidelity reward is: {reward}")
+print(f"Energetic cost is: {energy}, Fidelity reward is: {reward}") # Print energetic cost and fidelity reward of this set of pulses
