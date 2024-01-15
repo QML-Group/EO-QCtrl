@@ -581,3 +581,18 @@ def Run_GRAPE_Simulation(U_Target, H_Static, H_Control, H_Labels, R, Timesteps, 
 
     return Control_Fields[-1], U_Final, du_list, Fidelity, EC
 
+def convert_qutip_to_numpy(operator):
+
+    data = operator.full()
+    array = np.array(data)
+
+    return array 
+
+def convert_qutip_list_to_numpy(operator_list):
+
+    new_list = []
+
+    for operator in operator_list:
+        new_list.append(convert_qutip_to_numpy(operator))
+
+    return new_list

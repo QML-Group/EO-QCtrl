@@ -1,5 +1,6 @@
 import numpy as np 
-from qutip import basis, fidelity, identity, sigmax, sigmaz, tensor, destroy
+import scipy as sp 
+from qutip import basis, fidelity, identity, sigmax, sigmaz, sigmay, tensor, destroy, to_super, qpt, qpt_plot_combined
 from qutip_qip.circuit import QubitCircuit
 from qutip_qip.operations import expand_operator, toffoli, snot
 import matplotlib.pyplot as plt 
@@ -12,6 +13,8 @@ from qutip import Qobj
 import tensorflow as tf 
 from tensorflow.python import keras
 from keras import optimizers 
+from alive_progress import alive_bar
+from scipy.sparse.linalg import expm
 
 class QuantumEnvironment:
 
@@ -54,6 +57,9 @@ class QuantumEnvironment:
         self.timesteps = timesteps
         self.pulse_duration = pulse_duration
         self.grape_iterations = grape_iterations
+        self.h_drift_numpy = fc.convert_qutip_to_numpy(h_drift)
+        self.h_control_numpy = fc.convert_qutip_list_to_numpy(h_control)
+
 
         self.create_environment()
 
@@ -86,7 +92,7 @@ class QuantumEnvironment:
 
         Parameters
         ----------
-        Pulses : array
+        pulses : array
             (K x I_G) Array containing amplitudes of operators in Control Hamiltonian.
 
         Returns
@@ -128,3 +134,317 @@ class QuantumEnvironment:
         r_f = fidelity(dm_sim, dm_target)
 
         return r_f
+    
+    def calculate_energetic_cost(self, pulses, return_normalized = False):
+
+        """
+        Calculate Energetic Cost of certain set of Pulses
+
+        Parameters
+        ----------
+        pulses : array
+            (K x I_G) Array containing amplitudes of operators in Control Hamiltonian.
+
+        Returns 
+        ---------
+
+        return_value : float
+            Energetic cost of the quantum operation 
+        """
+
+        h_t_norm = []
+        stepsize = self.pulse_duration/self.timesteps
+
+        for i in range(self.timesteps - 1):
+            h_t = 0
+            for j in range(len(self.h_control)):
+                h_t += pulses[j, i] * self.h_control_numpy[j]
+
+            h_t_norm.append(np.linalg.norm(h_t))
+
+        energetic_cost = np.sum(h_t_norm) * stepsize
+        energetic_cost_normalized = energetic_cost / (self.pulse_duration * np.linalg.norm(np.sum(self.h_control_numpy)))
+
+        if return_normalized == True:
+
+            return_value = energetic_cost_normalized
+
+        elif return_normalized == False:
+
+            return_value = energetic_cost
+
+        return return_value
+    
+    def grape_iteration(self, u, r, J, u_b_list, u_f_list, dt, eps_f, eps_e, w_f, w_e):
+
+        """
+        Perform one iteration of the GRAPE algorithm and update control pulse parameters
+
+        Parameters
+        ----------
+
+        u : The generated control pulses with shape (iterations, controls, time)
+
+        r : The number of this specific GRAPE iteration
+
+        J : The number of controls in Control Hamiltonian
+
+        u_b_list : Backward propagators of each time (length M)
+
+        u_f_list : Forward propagators of each time (length M)
+
+        dt : Timestep size
+
+        eps_f : Distance to move along the gradient when updating controls for Fidelity
+
+        eps_e : Distance to move along the gradient when updating controls for Energy
+
+        w_f : Weight assigned to Fidelity part of the Cost Function
+
+        w_e : Weight assigned to Energy part of the Cost Function
+
+        Returns 
+        --------
+
+        u[r + 1, :, :] : The updated parameters 
+        """
+
+        du_list = np.zeros((J, self.timesteps))
+        max_du_list = np.zeros((J))
+
+        for m in range(self.timesteps - 1):
+
+            P = u_b_list[m] @ self.u_target
+
+            for j in range(J):
+
+                Q = 1j * dt * self.h_control_numpy[j] @ u_f_list[m]
+
+                du_f = -2 * w_f * fc.overlap(P, Q) * fc.overlap(u_f_list[m], P)
+
+                denom = self.h_drift_numpy.conj().T @ self.h_drift_numpy + u[r, j, m] * (self.h_drift_numpy.conj().T @ self.h_control_numpy[j] + self.h_control_numpy[j].conj().T @ self.h_drift_numpy)
+
+                du_e = 0 
+
+                for k in range(J):
+
+                    du_e += -1 * dt * w_e * (np.trace(self.h_drift_numpy.conj().T @ self.h_control_numpy[j] + self.h_control_numpy[j].conj().T @ self.h_drift_numpy) + np.trace(self.h_control_numpy[j].conj().T @ self.h_control_numpy[k] * (u[r, j, m] + u[r, k, m])))
+
+                    denom += u[r, j, m] * u[r, k, m] * self.h_control_numpy[j].conj().T @ self.h_control_numpy[k]
+
+                du_e /= (2 * np.trace(denom) ** (1/2))
+
+                du_e_norm = du_e / (self.pulse_duration * (np.linalg.norm(self.h_drift_numpy) + np.linalg.norm(np.sum(self.h_control_numpy))))
+
+                du_t = du_f + du_e_norm 
+
+                du_list[j, m] = du_t.real
+
+                max_du_list[j] = np.max(du_list[j])
+
+                u[r + 1, j, m] = u[r, j, m] + eps_f * du_f.real + eps_e * du_e_norm.real
+
+        for j in range(J):
+            u[r + 1, j, self.timesteps - 1] = u[r + 1, j, self.timesteps - 2] 
+
+        return max_du_list
+    
+    def run_grape_optimization(self, w_f, w_e, eps_f, eps_e):
+
+        """
+        Runs GRAPE algorithm and returns the control pulses, final unitary, Fidelity, and Energetic Cost for the Hamiltonian operators in H_Control
+        so that the unitary U_target is realized 
+
+        Parameters 
+        ----------
+
+        w_f : float
+            Weight assigned to Fidelity part of the Cost Function
+
+        w_e : float
+            Weight assigned to Energetic Cost part of the Cost Functions
+
+        eps_f : int
+            Learning rate for fidelity
+
+        eps_e : int
+            Learning rate for energy
+
+        Returns
+        --------
+
+        u : Optimized control pulses with dimension (iterations, controls, timesteps)
+
+        u_f_list[-1] : Final unitary based on last GRAPE iteration
+
+        du_max_per_iteration : Array containing the max gradient of each control for all GRAPE iterations
+
+        cost_function : Array containing the value of the cost function for all GRAPE iterations
+
+        infidelity_array : Array containing the infidelity for all GRAPE iterations
+
+        energy_array : Array containing the energetic cost for all GRAPE iterations
+        
+        """
+        times = np.linspace(0, self.pulse_duration, self.timesteps)
+
+        if eps_f is None:
+            eps_f = 0.1 * (self.pulse_duration) /(times[-1])
+
+        if eps_e is None:
+            eps_e = 0.1 * (self.pulse_duration) / (times[-1])
+
+        M = len(times)
+        J = len(self.h_control_numpy)
+
+        u = np.zeros((self.grape_iterations, J, M))
+
+        du_max_per_iteration = np.zeros((self.grape_iterations - 1, J))
+
+        cost_function_array = []
+        infidelity_array = []
+        energy_array = []
+
+        with alive_bar(self.grape_iterations - 1) as bar:
+            
+            for r in range(self.grape_iterations - 1):
+
+                bar()
+                dt = times[1] - times[0]
+
+                def _H_idx(idx):
+                    return self.h_drift_numpy + sum([u[r, j, idx] * self.h_control_numpy[j] for j in range(J)])
+                
+                u_list = [expm(-1j * _H_idx(idx) * dt) for idx in range(M - 1)]
+
+                u_f_list = []
+                u_b_list = []
+
+                u_f = sp.eye(*(self.u_target.shape))
+                u_b = sp.eye(*(self.u_target.shape))
+
+                for n in range(M - 1):
+
+                    u_f = u_list[n] @ u_f
+                    u_f_list.append(u_f)
+                    
+                    u_b_list.insert(0, u_b)
+                    u_b = u_list[M - 2 - n].T.conj() @ u_b
+
+                du_max_per_iteration[r] = self.grape_iteration(u, r, J, u_b_list, u_f_list, dt, eps_f, eps_e, w_f, w_e)
+
+                cost_function = w_f * (1 - fc.Calculate_Fidelity(self.u_target, u_f_list[-1])) + w_e * self.calculate_energetic_cost(u[r])
+                cost_function_array.append(cost_function)
+                infidelity_array.append(1 - fc.Calculate_Fidelity(self.u_target, u_f_list[-1]))
+                energy_array.append(self.calculate_energetic_cost(u[r]))
+
+        return u, u_f_list[-1], du_max_per_iteration, cost_function, infidelity_array, energy_array
+    
+    def plot_grape_pulses(self, pulses, labels):
+
+        """
+        Plot the pulses generated by the EO-GRAPE Algorithm
+
+        Parameters 
+        ----------
+
+        pulses : Pulses generated by the EO-GRAPE algorithm
+
+        labels : Labels for the operators in h_control
+        """
+
+        time = np.linspace(0, self.pulse_duration, self.timesteps)
+
+        fig, ax = plt.subplots(len(self.h_control_numpy))
+
+        for i in range(len(self.h_control_numpy)):
+            
+            ax[i].plot(time, pulses[-1, i, :], label = f"{labels[i]}")
+            ax[i].set(xlabel = "Time", ylabel = f"{labels[i]}")
+
+        plt.subplot_tool()
+        plt.show()
+
+    def plot_tomography(self, final_unitary):
+
+        """
+        Plot the tomography of the target unitary and the unitary realized by the EO-GRAPE algorithm
+
+        Parameters
+        ----------
+
+        final_unitary : The final unitary obtained by the EO-GRAPE algorithm
+        """
+
+        op_basis = [[Qobj(identity(2)), Qobj(sigmax()), Qobj(sigmay()), Qobj(sigmaz())]] * 2
+        op_label = [["I", "X", "Y", "Z"]] * 2   
+
+        u_i_s = to_super(Qobj(self.u_target))
+        u_f_s = to_super(Qobj(final_unitary))
+        chi_1 = qpt(u_i_s, op_basis)
+        chi_2 = qpt(u_f_s, op_basis)
+
+        fig_1 = plt.figure(figsize = (6,6))
+        fig_1 = qpt_plot_combined(chi_1, op_label, fig=fig_1, threshold=0.001, title = 'Target Unitary Gate ')
+
+        fig_2 = plt.figure(figsize = (6, 6))
+        fig_2 = qpt_plot_combined(chi_2, op_label, fig = fig_2, threshold = 0.001, title = 'Final Unitary after Optimization')
+
+        plt.show()
+
+    def plot_du(self, du_list, labels):
+        
+        """
+        Plot the max gradient over all timesteps per control operator as function of GRAPE iterations
+
+        Parameters
+        ----------
+
+        du_list : The list containing gradient values from the EO-GRAPE algorithm
+
+        labels : The labels associated to the operators in h_control 
+        """
+
+        iteration_space = np.linspace(1, self.grape_iterations - 1, self.grape_iterations - 1)
+
+        for i in range(len(self.h_control_numpy)):
+            plt.plot(iteration_space, du_list[:, i], label = f"{labels[i]}")
+        plt.axhline(y = 0, color = "black", linestyle = "-")
+        plt.xlabel("GRAPE Iteration Number")
+        plt.ylabel("Maximum Gradient over Time")
+        plt.title("Maximum Gradient over Time vs. GRAPE Iteration Number")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+    def plot_cost_function(self, cost_fn, infidelity, energy, w_f, w_e):
+
+        """
+        Plot the value of the cost function as function of GRAPE iterations
+
+        Parameters
+        ----------
+
+        cost_fn : The array containing cost function values obtained by the EO-GRAPE algorithm
+
+        infidelity : The array containing the infidelity values obtained by the EO-GRAPE algorithm
+
+        energy : The array containing the energetic cost values obtained by the EO-GRAPE algorithm
+
+        w_f : The weight assigned to the fidelity part of the cost function
+
+        w_e : The weight assigned to the energetic cost part of the cost function
+        """
+
+        iteration_space = np.linspace(1, self.grape_iterations - 1, self.grape_iterations - 1)
+
+        plt.plot(iteration_space, cost_fn, label = f"Cost Function, $w_f$ = {w_f}, $w_e$ = {w_e}")
+        plt.plot(iteration_space, infidelity, label = f"Infidelity (1-F)")
+        plt.plot(iteration_space, energy, label = f"Normalized Energetic Cost")
+        plt.axhline(y = 0, color = "black", linestyle = "-")
+        plt.xlabel("GRAPE iteration number")
+        plt.ylabel("Cost Function")
+        plt.title("Cost Function, Infidelity, and Energetic Cost vs. GRAPE Iteration Number")
+        plt.legend()
+        plt.grid()
+        plt.show()
