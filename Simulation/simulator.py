@@ -12,11 +12,16 @@ from alive_progress import alive_bar
 from scipy.sparse.linalg import expm
 
 class QuantumEnvironment:
-
+   
     def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, initial_state, u_target, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500):
 
         """
-        Initialize QuantumEnvironment instance.
+        QuantumEnvironment Class
+        ------------------------
+
+        Create instance of a Quantum Processor with customizable Drift and Control Hamiltonian, Relaxation and Decoherence times for Pulse Level control 
+        
+        Contains EO-GRAPE Algorithm (Energy Optimized Gradient Ascent Pulse Engineering)
 
         Parameters
         ----------
