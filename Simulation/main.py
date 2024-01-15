@@ -9,7 +9,7 @@ import qutip.visualization as vz
 from qutip.qip.noise import RelaxationNoise
 from qutip.metrics import fidelity
 from qutip import Qobj
-import simulator as sim 
+from simulator import QuantumEnvironment
 from keras import optimizers 
 
 # Input Parameters
@@ -25,6 +25,10 @@ H_Control_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian u
 H_Control_Scratch = [fc.tensor(fc.sigmax(), fc.identity(2)), # Define Control Hamiltonian used for optimization
                    fc.tensor(fc.identity(2), fc.sigmax()),
                    fc.tensor(fc.sigmax(), fc.sigmax())]
+
+H_Labels = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
+              r'$u_{2x}$', 
+              r'$u_{xx}$'] 
 
 TargetUnitary = fc.cnot()
 
@@ -44,12 +48,33 @@ time = np.linspace(0, T, Nt)
 
 Initial_State = basis(4, 2)
 
-# Run RL Agent and Training
+weight_fidelity = 0.5
 
-env = sim.QuantumEnvironmentWrapper(N_q, H_Drift_Qutip, H_Control_Qutip, T1, T2, Nt, Initial_State, TargetUnitary)
+weight_energy = 0.5
 
-ppo_model = sim.PPOModel(env.action_space_size)
+epsilon_f = 1
 
-ppo_optimizer = optimizers.Adam(learning_rate = 0.001)
+epsilon_e = 100
 
-sim.train_agent(env, ppo_model, ppo_optimizer, num_episodes = 100)
+# Test Quantum Environment Class
+
+Environment = QuantumEnvironment(N_q, H_Drift_Qutip, H_Control_Qutip, H_Labels, T1, T2, Initial_State, TargetUnitary, Nt, T, Ng)
+
+pulses = Environment.run_grape_optimization(weight_fidelity, weight_energy, epsilon_f, epsilon_e)
+
+energy = Environment.calculate_energetic_cost(pulses)
+
+result = Environment.run_pulses(pulses, plot_pulses = True)
+
+reward = Environment.calculate_fidelity_reward(result, plot_result = True)
+
+print(energy)
+print(reward)
+
+Environment.plot_grape_pulses(pulses)
+
+#Environment.plot_tomography()
+
+#Environment.plot_du()
+
+#Environment.plot_cost_function()
