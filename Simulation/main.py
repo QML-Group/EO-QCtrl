@@ -4,29 +4,23 @@ from qutip_qip.operations import expand_operator, toffoli, snot
 import functions as fc
 from qutip.metrics import fidelity
 from simulator import QuantumEnvironment
+import tensorflow as tf 
+from scipy.optimize import minimize 
+
 
 # Input Parameters
 
-H_Drift_Qutip = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
-H_Drift_Scratch = np.pi * (fc.tensor(fc.sigmaz(), fc.identity(2)) + fc.tensor(fc.identity(2), fc.sigmaz())) + (1/2) * np.pi * fc.tensor(fc.sigmaz(), fc.sigmaz()) # Define Drift Hamiltonian used for optimization
-H_Control_Qutip = [tensor(sigmax(), identity(2)), # Define Control Hamiltonian used in "Processor"
-                   tensor(identity(2), sigmax()),
-                   tensor(sigmax(), sigmax())]
-H_Control_Scratch = [fc.tensor(fc.sigmax(), fc.identity(2)), # Define Control Hamiltonian used for optimization
-                   fc.tensor(fc.identity(2), fc.sigmax()),
-                   fc.tensor(fc.sigmax(), fc.sigmax())]
-H_Labels = [r'$u_{1x}$', # Labels for H_Control_4 (optional for plotting)
-              r'$u_{2x}$', 
-              r'$u_{xx}$'] 
-TargetUnitary = fc.cnot()
-N_q = 2
-T = 2 * np.pi
-T1 = 100 * T
-T2 = 100 * T
-Nt = 500
-Ng = 500
-time = np.linspace(0, T, Nt)
-Initial_State = basis(4, 2)
+h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
+h_c = [tensor(sigmax(), identity(2)), tensor(identity(2), sigmax()), tensor(sigmax(), sigmax())]
+h_l = [r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$'] 
+target_unitary = fc.cnot()
+number_qubits = 2
+gate_duration = 2 * np.pi
+t1 = 100 * gate_duration
+t2 = 100 * gate_duration
+number_of_timesteps = 500
+number_of_grape_iterations = 500
+initial_state = basis(4, 2)
 weight_fidelity = 1
 weight_energy = 0
 epsilon_f = 1
@@ -34,7 +28,7 @@ epsilon_e = 100
 
 # Test Quantum Environment Class
 
-Environment = QuantumEnvironment(N_q, H_Drift_Qutip, H_Control_Qutip, H_Labels, T1, T2, Initial_State, TargetUnitary, Nt, T, Ng) # Create instance of Quantum Environment
+Environment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations) # Create instance of Quantum Environment
 
 pulses = Environment.run_grape_optimization(weight_fidelity, weight_energy, epsilon_f, epsilon_e) # Calculate pulses by EO-GRAPE algorithm
 
