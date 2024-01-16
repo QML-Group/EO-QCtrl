@@ -14,7 +14,7 @@ def clip(A):
 # Input Parameters
 
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
-h_c = [tensor(sigmax(), identity(2)), tensor(identity(2), sigmax()), tensor(sigmax(), sigmax())]
+h_c = [tensor(identity(2), sigmax())]
 h_l = [r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$'] 
 target_unitary = fc.cnot()
 number_qubits = 2
@@ -35,7 +35,7 @@ Environment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_s
 
 # Define Q-Learning parameters
 
-learning_rate = 1
+learning_rate = 0.001
 discount_factor = 0.99
 exploration_rate = 1.0 
 exploration_decay = 0.995
@@ -44,9 +44,19 @@ num_episodes = 1000
 
 # Define NN for the Q-function approximation 
 
-model = keras.Sequential([keras.layers.Dense(64, activation='tanh', input_shape=(len(h_c), number_of_timesteps)), keras.layers.Dense((number_of_timesteps))])
+model = keras.Sequential([keras.layers.Dense(number_of_timesteps, activation='tanh', input_shape=(len(h_c), number_of_timesteps)), keras.layers.Dense(number_of_timesteps)])
 
 model.compile(optimizer = keras.optimizers.Adam(learning_rate), loss = 'mse')
+
+print(model.summary())
+state = np.random.random((len(h_c), number_of_timesteps))
+predict = model.predict(np.array([state]))
+print(predict)
+print(np.shape(predict))
+model.fit(np.array([state]), np.array([target]), epochs=1, verbose = 0)
+
+
+"""
 
 # Q-learning training loop
 for episode in range(num_episodes):
@@ -57,7 +67,7 @@ for episode in range(num_episodes):
 
     while not done:
         # Choose action using epsilon-greedy policy with increased initial exploration
-        if np.random.rand() < max(exploration_rate, 0.5):  # Start with higher exploration
+        if np.random.rand() < exploration_rate:  # Start with higher exploration
             # Randomly sample a pulse sequence
             pulses = np.random.random((len(h_c), number_of_timesteps))
         else:
@@ -65,12 +75,11 @@ for episode in range(num_episodes):
             pulses = clip(model.predict(np.array([state]))[0])
             
         # Take action and observe new state and reward
-        result = Environment.run_pulses(pulses)
+        result = Environment.run_pulses(pulses) # Should be the agent's model 
         reward = Environment.calculate_fidelity_reward(result)
 
         # Update Q-value using Bellman equation
-        next_state = np.random.random((len(h_c), number_of_timesteps))  # Replace this with the actual next state
-        next_action = np.argmax(clip(model.predict(np.array([next_state]))[0]))
+        next_state = np.random.random((len(h_c), number_of_timesteps))  # This should come from the actual experiment 
 
         target = reward + discount_factor * np.max(clip(model.predict(np.array([next_state]))[0]))
         model.fit(np.array([state]), np.array([target]), epochs=1, verbose = 0)
@@ -89,4 +98,4 @@ for episode in range(num_episodes):
     exploration_rate = max(min_exploration_rate, exploration_rate * exploration_decay)
 
     print(f"Episode {episode + 1}, Total Reward: {total_reward}")
-
+"""
