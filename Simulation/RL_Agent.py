@@ -48,10 +48,6 @@ model = keras.Sequential([keras.layers.Dense(64, activation='tanh', input_shape=
 
 model.compile(optimizer = keras.optimizers.Adam(learning_rate), loss = 'mse')
 
-# Q-Learning training loop
-
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate), loss='mse')
-
 # Q-learning training loop
 for episode in range(num_episodes):
     state = np.random.random((len(h_c), number_of_timesteps))  # Initial random state
@@ -67,7 +63,7 @@ for episode in range(num_episodes):
         else:
             # Use the trained model to predict control pulses
             pulses = clip(model.predict(np.array([state]))[0])
-            print(pulses)
+            
         # Take action and observe new state and reward
         result = Environment.run_pulses(pulses)
         reward = Environment.calculate_fidelity_reward(result)
