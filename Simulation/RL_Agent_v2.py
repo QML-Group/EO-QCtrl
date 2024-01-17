@@ -30,7 +30,7 @@ epsilon_e = 100
 
 # Define parameters
 
-state_size = (1, number_qubits**2)
+state_size = (number_qubits**2, number_qubits**2)
 action_size = (len(h_c), number_of_timesteps)
 num_episodes = 1000
 batch_size = 32
@@ -47,9 +47,9 @@ class QNetwork(keras.Model):
 
         # Define neural network layers
 
-        self.dense1 = keras.layers.Dense(64, activation = 'tanh', input_shape = state_size)
+        self.dense1 = keras.layers.Dense(64, activation = 'tanh',  input_shape = state_size)
         self.dense2 = keras.layers.Dense(32, activation = 'tanh')
-        self.output_layer = keras.layers.Dense(action_size[1], activation= 'tanh')
+        self.output_layer = keras.layers.Dense(number_of_timesteps, activation= 'tanh')
 
     def call(self, state):
         # Define the forward pass of the neural network
@@ -86,7 +86,6 @@ class QAgent:
 
         if np.random.rand() <= self.epsilon:
             return np.random.uniform(-1, 1, size = self.action_size)
-        
         return self.model.predict(np.array([state]))[0]
     
     def remember(self, state, action, reward, next_state):
@@ -133,17 +132,16 @@ for episode in range(num_episodes):
     for timestep in range(training_timesteps):
         # Agent chooses an action based on the current state
         action = agent.act(state)
-        print(timestep)
-        print(np.shape(action))
 
         # Environment provides the next state and the reward for the chosen action
         next_state = quantum_env.run_pulses(action)
-        print(next_state)
+        
         reward = quantum_env.calculate_fidelity_reward(next_state)
 
         # Store the experience tuple in the agent's memory
         agent.remember(state, action, reward, next_state)
-        state = next_state
+        state = [np.ndarray.flatten(fc.convert_qutip_to_numpy(next_state))]
+        print(state)
         total_reward += reward
 
         # Experience replay and Q-network update
