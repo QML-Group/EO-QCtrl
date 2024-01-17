@@ -126,8 +126,7 @@ class QuantumEnvironment:
         r_f : Fidelity Reward for a specific Qutip result, Initial State, and Target Unitary.
         """
 
-        sv_sim = result
-        dm_sim = sv_sim * sv_sim.dag()
+        dm_sim = result
 
         qutip_u_target = Qobj(self.u_target)
         sv_target = qutip_u_target * self.initial_state
