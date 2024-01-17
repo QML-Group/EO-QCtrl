@@ -110,7 +110,7 @@ class QuantumEnvironment:
             self.environment.plot_pulses()
             plt.show()
 
-        return result
+        return result.states[-1]
     
     def calculate_fidelity_reward(self, result, plot_result = False):
 
@@ -126,7 +126,7 @@ class QuantumEnvironment:
         r_f : Fidelity Reward for a specific Qutip result, Initial State, and Target Unitary.
         """
 
-        sv_sim = result.states[-1]
+        sv_sim = result
         dm_sim = sv_sim * sv_sim.dag()
 
         qutip_u_target = Qobj(self.u_target)
