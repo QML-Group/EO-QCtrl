@@ -13,7 +13,6 @@ import random
 import matplotlib.pyplot as plt 
 
 # Intial Values
-
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 h_c = [tensor(identity(2), sigmax())]
 h_l = [r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$'] 
@@ -36,7 +35,6 @@ state_size = (2*number_qubits)**2
 action_size = len(h_c) * number_of_timesteps
 
 # Define Q Learning Agent Class
-
 class QLearningAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size # State size for input
@@ -46,10 +44,8 @@ class QLearningAgent:
         self.epsilon_min = 0.01 # Minimum exploration rate
         self.epsilon_decay = 0.995 # Exploration decay rate 
         self.learning_rate = 0.001 # Learning rate of the Agent
-        self.memory = []
-
-        # Build Q-network
-        self.model = self._build_model()
+        self.memory = [] # Initialize memory list 
+        self.model = self._build_model() # Build Q-network
 
     def _build_model(self):
         model = models.Sequential()
@@ -57,14 +53,12 @@ class QLearningAgent:
         model.add(layers.Dense(units = 24, activation = 'relu'))
         model.add(layers.Dense(self.action_size, activation = 'tanh'))
         model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
-
         return model 
     
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return np.random.uniform(low = -1, high = 1, size = self.action_size)
         act_values = self.model.predict(np.array(state))[0]
-
         return np.squeeze(act_values)
     
     def remember(self, state, action, reward, next_state):
@@ -75,7 +69,6 @@ class QLearningAgent:
         
         for state, action, reward, next_state in minibatch:
             target = reward + self.gamma * np.amax(self.model.predict(next_state))
-            
             self.model.fit(np.array(state), np.array(target).flatten(), epochs = 1, verbose = 0)
 
         if self.epsilon > self.epsilon_min:
