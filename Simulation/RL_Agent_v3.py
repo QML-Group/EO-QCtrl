@@ -89,8 +89,8 @@ env = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, ta
 agent = QLearningAgent(state_size, action_size)
 
 # Training parameters
-episodes = 1000
-batch_size = 32
+episodes = 600
+batch_size = 5
 training_timesteps = 100
 episode_array = np.linspace(1, episodes, episodes)
 total_reward_array = []
