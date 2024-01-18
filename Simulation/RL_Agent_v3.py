@@ -11,6 +11,7 @@ import keras
 from collections import deque
 import random
 import matplotlib.pyplot as plt 
+from alive_progress import alive_bar
 
 # Intial Values
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
@@ -53,6 +54,7 @@ class QLearningAgent:
         model.add(layers.Dense(units = 24, activation = 'relu'))
         model.add(layers.Dense(self.action_size, activation = 'tanh'))
         model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
+        model.get_metrics_result()
         return model 
     
     def act(self, state):
@@ -69,7 +71,7 @@ class QLearningAgent:
         
         for state, action, reward, next_state in minibatch:
             target = reward + self.gamma * np.amax(self.model.predict(next_state))
-            self.model.fit(np.array(state), np.array(target).flatten(), epochs = 1, verbose = 0)
+            self.history = self.model.fit(np.array(state), np.array(target).flatten(), epochs = 1, verbose = 0)
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay 
@@ -87,40 +89,47 @@ env = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, ta
 agent = QLearningAgent(state_size, action_size)
 
 # Training parameters
-episodes = 100
+episodes = 1000
 batch_size = 32
-training_timesteps = 1000
+training_timesteps = 100
 episode_array = np.linspace(1, episodes, episodes)
 total_reward_array = []
+loss_array = []
 
 # Q-Learning training loop
-for episode in range(episodes):
-    state = numpy_initial_dm.flatten()
-    state = np.reshape(state, (1, state_size))
-    total_reward = 0
-    
-    for timestep in range(training_timesteps):
-        action = agent.act(state)
-        action_2d = np.reshape(action, (len(h_c), number_of_timesteps))
-        next_state = env.run_pulses(action_2d)
-        reward = env.calculate_fidelity_reward(next_state)
-        next_state = fc.convert_qutip_to_numpy(next_state).flatten()
-        next_state = np.reshape(next_state, (1, state_size))
-        agent.remember(state, action, reward, next_state)
-        state = next_state
-        total_reward += reward
-    agent.replay(batch_size)
-    print(f"Episode: {episode + 1}, Total Reward: {total_reward}")
-    total_reward_array.append(total_reward)
-
+with alive_bar(episodes) as bar:
+    for episode in range(episodes):
+        bar()
+        state = numpy_initial_dm.flatten()
+        state = np.reshape(state, (1, state_size))
+        total_reward = 0
+        
+        for timestep in range(training_timesteps):
+            action = agent.act(state)
+            action_2d = np.reshape(action, (len(h_c), number_of_timesteps))
+            next_state = env.run_pulses(action_2d)
+            reward = env.calculate_fidelity_reward(next_state)
+            next_state = fc.convert_qutip_to_numpy(next_state).flatten()
+            next_state = np.reshape(next_state, (1, state_size))
+            agent.remember(state, action, reward, next_state)
+            state = next_state
+            total_reward += reward
+        agent.replay(batch_size)
+        print(f"Episode: {episode + 1}, Total Average Reward: {total_reward/training_timesteps}")
+        total_reward_array.append(total_reward/training_timesteps)
+        metrics = agent.history.history['loss']
+        loss_array.append(metrics)
+        
 # Save the trained weights
 agent.save_weights('q_learning_weights.h5')
 
 # Plot total reward versus episodes 
 
-plt.plot(episode_array, total_reward_array)
+plt.plot(episode_array, total_reward_array, label = 'Total Average Reward')
+plt.plot(episode_array, loss_array, label = 'MSE loss')
 plt.xlabel("Training episode number (#)")
-plt.ylabel("Total Reward (a.u.)")
-plt.title("Total reward versus training episode number")
+plt.ylabel("Total Average Reward")
+plt.title("Total average reward versus training episode number")
+plt.legend()
 plt.grid()
 plt.show()
