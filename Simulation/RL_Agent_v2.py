@@ -85,7 +85,10 @@ class QAgent:
         # Epsilon-greedy exploration strategy
 
         if np.random.rand() <= self.epsilon:
+            print(np.random.uniform(-1, 1, size = self.action_size))
             return np.random.uniform(-1, 1, size = self.action_size)
+        print("Predicted")
+        print(self.model.predict(np.array([state]))[0])
         return self.model.predict(np.array([state]))[0]
     
     def remember(self, state, action, reward, next_state):
@@ -113,6 +116,7 @@ class QAgent:
 
     def target_train(self):
         # Update target Q-Network with the current Q-network weights
+        print(self.model.get_weights())
         self.target_model.set_weights(self.model.get_weights())
 
     def decay_epsilon(self):
@@ -141,13 +145,14 @@ for episode in range(num_episodes):
         # Store the experience tuple in the agent's memory
         agent.remember(state, action, reward, next_state)
         state = [np.ndarray.flatten(fc.convert_qutip_to_numpy(next_state))]
-        print(state)
+
         total_reward += reward
 
         # Experience replay and Q-network update
         agent.replay(batch_size)
         # Update the target Q-network
         agent.target_train()
+        print("Trained")
         # Decay epsilon for exploration-exploitation trade-off
         agent.decay_epsilon()
 
