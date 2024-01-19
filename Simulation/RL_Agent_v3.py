@@ -22,7 +22,7 @@ number_qubits = 2
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-number_of_timesteps = 5
+number_of_timesteps = 6
 number_of_grape_iterations = 500
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
@@ -53,7 +53,8 @@ class QLearningAgent:
         model.add(layers.Dense(units = 24, input_shape = (self.state_size,), activation = 'relu'))
         model.add(layers.Dense(units = 24, activation = 'relu'))
         model.add(layers.Dense(self.action_size, activation = 'tanh'))
-        model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
+        #model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
+        model.compile(loss = keras.losses.MeanSquaredError(), metrics = keras.metrics.MeanSquaredError(dtype = tf.complex128), optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
         model.get_metrics_result()
         return model 
     
@@ -90,8 +91,8 @@ agent = QLearningAgent(state_size, action_size)
 
 # Training parameters
 episodes = 600
-batch_size = 5
-training_timesteps = 100
+batch_size = 10
+training_timesteps = 1000
 episode_array = np.linspace(1, episodes, episodes)
 total_reward_array = []
 loss_array = []
