@@ -60,7 +60,8 @@ class QuantumEnvironment:
         self.grape_iterations = grape_iterations
         self.h_drift_numpy = fc.convert_qutip_to_numpy(h_drift)
         self.h_control_numpy = fc.convert_qutip_list_to_numpy(h_control)
-
+        self.action_shape = (len(h_control), timesteps)
+        self.state_shape = (n_q**2, n_q**2)
 
         self.create_environment()
 
@@ -85,6 +86,9 @@ class QuantumEnvironment:
 
         self.environment.set_all_tlist(simulatortimespace)
         self.environment.add_noise(noise = noise)
+
+    def reset(self):
+        return self.initial_state
 
     def run_pulses(self, pulses, plot_pulses = False):
 
