@@ -22,7 +22,7 @@ number_qubits = 2
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-number_of_timesteps = 6
+number_of_timesteps = 5
 number_of_grape_iterations = 500
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
@@ -50,11 +50,12 @@ class QLearningAgent:
 
     def _build_model(self):
         model = models.Sequential()
-        model.add(layers.Dense(units = 24, input_shape = (self.state_size,), activation = 'relu'))
-        model.add(layers.Dense(units = 24, activation = 'relu'))
+        model.add(layers.Dense(units = 24, input_shape = (self.state_size,), activation = 'tanh'))
+        model.add(layers.Dense(units = 24, activation = 'tanh'))
         model.add(layers.Dense(self.action_size, activation = 'tanh'))
         #model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
         model.compile(loss = keras.losses.MeanSquaredError(), metrics = keras.metrics.MeanSquaredError(dtype = tf.complex128), optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate))
+        keras.backend.set_floatx('float64')
         model.get_metrics_result()
         return model 
     
@@ -90,9 +91,9 @@ env = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, ta
 agent = QLearningAgent(state_size, action_size)
 
 # Training parameters
-episodes = 600
-batch_size = 10
-training_timesteps = 1000
+episodes = 1000
+batch_size = 32
+training_timesteps = 100
 episode_array = np.linspace(1, episodes, episodes)
 total_reward_array = []
 loss_array = []
@@ -120,7 +121,7 @@ with alive_bar(episodes) as bar:
         total_reward_array.append(total_reward/training_timesteps)
         metrics = agent.history.history['loss']
         loss_array.append(metrics)
-        
+     
 # Save the trained weights
 agent.save_weights('q_learning_weights.h5')
 

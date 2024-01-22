@@ -109,12 +109,13 @@ class QuantumEnvironment:
             self.environment.pulses[i].coeff = pulses[i]
 
         result = self.environment.run_state(init_state = self.initial_state)
+        density_matrix = result.states[-1]
         
         if plot_pulses == True:
             self.environment.plot_pulses()
             plt.show()
 
-        return result.states[-1]
+        return density_matrix
     
     def calculate_fidelity_reward(self, result, plot_result = False):
 

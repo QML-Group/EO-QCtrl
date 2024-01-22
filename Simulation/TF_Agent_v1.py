@@ -26,7 +26,7 @@ import tensorflow as tf
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.utils import common
 from tf_agents.trajectories import trajectory
-
+from tensorflow.python.framework import tensor_spec as tsp
 
 
 # Intial Values
@@ -60,7 +60,7 @@ class QuantumEnvironmentWrapper(py_environment.PyEnvironment):
 
     def __init__(self, quantum_environment, max_steps_per_episode):
         self._quantum_env = quantum_environment
-        self._action_spec = tf.TensorSpec(1, dtype = tf.float32, name = 'action')
+        self._action_spec = tsp.BoundedTensorSpec(1, tf.float32, 1, 1, name = 'action')
         self._observation_spec = tf.TensorSpec(1, dtype = tf.float32, name = 'observation')
         self._time_step_spec = ts.time_step_spec(self._observation_spec)
         self._current_time_step = None
