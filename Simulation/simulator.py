@@ -544,3 +544,50 @@ class QuantumEnvironment:
         plt.legend()
         plt.grid()
         plt.show()
+
+# Define training function
+        
+def run_training(
+        agent, 
+        train_driver,
+        replay_buffer,
+        eval_driver,
+        eval_replay_buffer,
+        avg_return,
+        num_iterations,
+        eval_iterations,
+        eval_interval = 1,
+        save_episodes = False,
+        clear_buffer = False,
+):
+    
+    return_list = []
+    episode_list = []
+    iteration_list = []
+
+    with trange(num_iterations, dynamic_ncols = False) as t:
+        for i in t:
+
+            t.set_description(f"episode {i}")
+
+            if clear_buffer:
+                replay_buffer.clear()
+
+            final_time_step, policy_state = train_driver.run()
+            experience = replay_buffer.gather_all()
+            train_loss = agent.train(experience)
+
+            if i % eval_interval == 0 or i == num_iterations - 1:
+                
+                avg_return.reset()
+                final_time_step, policy_state = eval_driver.run()
+
+                iteration_list.append(agent.train_step_counter.numpy())
+                return_list.append(avg_return.result().numpy())
+
+                t.set_postfix({"return" : return_list[-1]})
+
+                if save_episodes:
+                    episode_list.append(eval_replay_buffer.gather_all())
+
+    return return_list, episode_list, iteration_list

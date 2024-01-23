@@ -27,6 +27,10 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.utils import common
 from tf_agents.trajectories import trajectory
 from tensorflow.python.framework import tensor_spec as tsp
+import pickle
+from scipy.optimize import minimize 
+
+
 
 # Initial parameters 
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
