@@ -16,7 +16,7 @@ from tf_agents.trajectories import time_step as ts
 from tqdm.auto import trange
 import tensorflow as tf
 
-class QuantumEnvironment:
+class QuantumEnvironment(py_environment.PyEnvironment):
    
     def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, initial_state, u_target, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 100):
 
@@ -118,20 +118,22 @@ class QuantumEnvironment:
 
         return array_spec.BoundedArraySpec(
             shape = ((self.n_q * self.n_q)**2,),
-            dtype = tf.complex128,
+            dtype = np.float32,
             name = "density matrix",
             minimum = np.zeros((self.n_q * self.n_q)**2, dtype=np.float32),
             maximum = np.ones((self.n_q * self.n_q)**2, dtype = np.float32),
         )
 
-    def reset(self):
+    def _reset(self):
         """
         Resets the environment and returns the first timestep of a new episode 
         """
         self.current_step = 0
         self._episode_ended = False 
-        numpy_initial_state = fc.convert_qutip_to_numpy(self.initial_state)
-        return ts.restart(numpy_initial_state)
+        self.initial_dm = self.initial_state * self.initial_state.dag()
+        self.initial_dm = np.ndarray.astype(fc.convert_qutip_to_numpy(self.initial_dm).flatten(), np.float32)
+
+        return ts.restart(self.initial_dm)
 
     def _step(self, action):
 
@@ -140,27 +142,30 @@ class QuantumEnvironment:
         """
 
         action_2d = np.reshape(action, (len(self.h_control), self.timesteps))
-
+        
         if self._episode_ended:
-            return self.reset()
+            
+            return self._reset()
         
         if self.current_step < self.n_steps:
+            
             next_state = self.run_pulses(action_2d)
-            next_state_formatted = fc.convert_qutip_to_numpy(next_state).flatten()
-            next_state_formatted = np.reshape(next_state_formatted, (1, self.state_size))
+            next_state_formatted = np.ndarray.astype(fc.convert_qutip_to_numpy(next_state).flatten(), np.float32)
             terminal = False
             reward = (self.calculate_fidelity_reward(next_state))
 
             if self.current_step == self.n_steps - 1:
+                
                 reward = (self.calculate_fidelity_reward(next_state))
                 terminal = True
 
         else:
+            print("else")
             terminal = True
             reward = 0
             next_state = 0
-            self.current_step += 1
-
+        self.current_step += 1
+        
         if terminal: 
             self._episode_ended = True
             return ts.termination(next_state_formatted, reward)
@@ -555,7 +560,6 @@ def run_training(
         eval_replay_buffer,
         avg_return,
         num_iterations,
-        eval_iterations,
         eval_interval = 1,
         save_episodes = False,
         clear_buffer = False,
@@ -583,7 +587,8 @@ def run_training(
                 final_time_step, policy_state = eval_driver.run()
 
                 iteration_list.append(agent.train_step_counter.numpy())
-                return_list.append(avg_return.result().numpy())
+                return_list.append(avg_return.result().numpy()/num_iterations)
+                print(avg_return.result().numpy()/num_iterations)
 
                 t.set_postfix({"return" : return_list[-1]})
 
