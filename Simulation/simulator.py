@@ -10,10 +10,15 @@ from qutip.metrics import fidelity
 from qutip import Qobj
 from alive_progress import alive_bar
 from scipy.sparse.linalg import expm
+from tf_agents.environments import py_environment
+from tf_agents.specs import array_spec
+from tf_agents.trajectories import time_step as ts
+from tqdm.auto import trange
+import tensorflow as tf
 
 class QuantumEnvironment:
    
-    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, initial_state, u_target, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500):
+    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, initial_state, u_target, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 100):
 
         """
         QuantumEnvironment Class
@@ -62,6 +67,10 @@ class QuantumEnvironment:
         self.h_control_numpy = fc.convert_qutip_list_to_numpy(h_control)
         self.action_shape = (len(h_control), timesteps)
         self.state_shape = (n_q**2, n_q**2)
+        self.state_size = (n_q * n_q)**2
+        self.current_step = 0
+        self._episode_ended = False
+        self.n_steps = n_steps
 
         self.create_environment()
 
@@ -87,8 +96,77 @@ class QuantumEnvironment:
         self.environment.set_all_tlist(simulatortimespace)
         self.environment.add_noise(noise = noise)
 
+    def action_spec(self):
+
+        """ 
+        Returns the action spec
+        """
+
+        return array_spec.BoundedArraySpec(
+            shape = (len(self.h_control) * self.timesteps,),
+            dtype = np.float32,
+            name = "pulses",
+            minimum = -1.0,
+            maximum = 1.0,
+        )
+
+    def observation_spec(self):
+
+        """
+        Returns the observation spec
+        """
+
+        return array_spec.BoundedArraySpec(
+            shape = ((self.n_q * self.n_q)**2,),
+            dtype = tf.complex128,
+            name = "density matrix",
+            minimum = np.zeros((self.n_q * self.n_q)**2, dtype=np.float32),
+            maximum = np.ones((self.n_q * self.n_q)**2, dtype = np.float32),
+        )
+
     def reset(self):
-        return self.initial_state
+        """
+        Resets the environment and returns the first timestep of a new episode 
+        """
+        self.current_step = 0
+        self._episode_ended = False 
+        numpy_initial_state = fc.convert_qutip_to_numpy(self.initial_state)
+        return ts.restart(numpy_initial_state)
+
+    def _step(self, action):
+
+        """
+        Updates environment according to the action
+        """
+
+        action_2d = np.reshape(action, (len(self.h_control), self.timesteps))
+
+        if self._episode_ended:
+            return self.reset()
+        
+        if self.current_step < self.n_steps:
+            next_state = self.run_pulses(action_2d)
+            next_state_formatted = fc.convert_qutip_to_numpy(next_state).flatten()
+            next_state_formatted = np.reshape(next_state_formatted, (1, self.state_size))
+            terminal = False
+            reward = (self.calculate_fidelity_reward(next_state))
+
+            if self.current_step == self.n_steps - 1:
+                reward = (self.calculate_fidelity_reward(next_state))
+                terminal = True
+
+        else:
+            terminal = True
+            reward = 0
+            next_state = 0
+            self.current_step += 1
+
+        if terminal: 
+            self._episode_ended = True
+            return ts.termination(next_state_formatted, reward)
+        
+        else:
+            return ts.transition(next_state_formatted, reward)
 
     def run_pulses(self, pulses, plot_pulses = False):
 
