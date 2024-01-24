@@ -176,6 +176,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             terminal = True
             reward = 0
             next_state = 0
+        #print(self.reward_list)
         self.current_step += 1
         self.reward_counter += 1
         

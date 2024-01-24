@@ -31,9 +31,9 @@ number_qubits = 2
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-number_of_timesteps = 10
+number_of_timesteps = 100
 number_of_grape_iterations = 500
-max_train_steps = 100 # Inner "for loop"
+max_train_steps = 1 # Inner "for loop"
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
 numpy_initial_state = fc.convert_qutip_to_numpy(initial_state)
@@ -47,18 +47,18 @@ state_shape = (number_qubits**2, number_qubits**2)
 action_size = len(h_c) * number_of_timesteps
 action_shape = (len(h_c), number_of_timesteps)
 time = np.linspace(0, gate_duration, number_of_timesteps)
-iteration_space = np.linspace(1, 100, 100)
+
 
 
 
 # Hyperparameters
 
-fc_layer_params = (100, 50, 30)
+fc_layer_params = (100, 100, 100)
 learning_rate = 1e-3
-num_iterations = 100 # Number of episodes "outer for loop in training loop"
+num_iterations = 800 # Number of episodes "outer for loop in training loop"
 collect_episodes_per_iteration = 1
 eval_interval = 1
-replay_buffer_capacity = 7 * max_train_steps
+replay_buffer_capacity = 100
 
 env_train_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
 env_eval_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
@@ -153,22 +153,46 @@ iteration_list += iteration_list_
 
 # Plotting the results 
 
-reward_per_episode = []
-for i in range(max_train_steps):
-    sum = np.sum(env_eval_py.reward_list[10*i : 10 + 10*i])
-    reward_per_episode.append(sum)
-    sum = 0
+
+avg_eval_reward_per_episode = []
+avg_train_reward_per_episode = []
+iteration_space = np.linspace(1, max_train_steps*num_iterations, max_train_steps*num_iterations)
+
+for i in range(num_iterations):
+    sum_eval = np.sum(env_eval_py.reward_list[max_train_steps*i : max_train_steps + max_train_steps*i])
+    sum_train =np.sum(env_train_py.reward_list[max_train_steps*i : max_train_steps + max_train_steps*i])
+    avg_eval_reward_per_episode.append(sum_eval/max_train_steps)
+    avg_train_reward_per_episode.append(sum_train/max_train_steps)
+
+
 
 fig, ax1 = plt.subplots()
 ax2 = ax1.twinx()
-ax1.plot(iteration_list, reward_per_episode, label = "Reward per episode", color = "blue")
-ax2.plot(iteration_list, return_list, label = "Total Average Return per episode", color = "orange")
-ax1.set_ylabel("Total Reward per Episode")
-ax2.set_ylabel("Total Average Return per Episode")
-ax1.legend()
+ax1.plot(iteration_list, avg_eval_reward_per_episode, label = "Average Fidelity per episode Eval Env", color = "blue")
+#ax1.plot(iteration_list, avg_train_reward_per_episode, label = "Average Fidelity per episode Train Env", color = "green")
+ax2.plot(iteration_list, return_list, label = "Average Return per episode", color = "orange")
+ax1.set_ylabel("Average Fidelity per Episode")
+ax2.set_ylabel("Average Return per Episode")
+ax1.legend(loc = "upper left")
 ax1.grid()
-ax2.legend()
+ax2.legend(loc = "upper right")
+plt.show()
+
+plt.plot(iteration_space, env_eval_py.reward_list, label = "Fidelity Eval Env")
+#plt.plot(iteration_space, env_train_py.reward_list, label = "Fidelity Train Env")
+plt.xlabel("Iteration number (# episodes x # cycles)")
+plt.ylabel("Fidelity per iteration")
+plt.grid()
+plt.legend()
 plt.show()
 
 final_val = episode_list[-1]
 final_pulse = final_val.action.numpy()[0, 0, :]
+
+#plt.plot(time, final_pulse)
+plt.step(time, final_pulse)
+plt.axhline(y = 0, color = "black", ls = "-")
+plt.xlabel("Time")
+plt.ylabel(r"$\sigma_{xx}$")
+plt.grid()
+plt.show()
