@@ -156,11 +156,10 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
             if self.current_step == self.n_steps - 1:
                 
-                reward = (self.calculate_fidelity_reward(next_state))
+                #reward = (self.calculate_fidelity_reward(next_state))
                 terminal = True
 
         else:
-            print("else")
             terminal = True
             reward = 0
             next_state = 0
@@ -588,8 +587,7 @@ def run_training(
 
                 iteration_list.append(agent.train_step_counter.numpy())
                 return_list.append(avg_return.result().numpy()/num_iterations)
-                print(avg_return.result().numpy()/num_iterations)
-
+                
                 t.set_postfix({"return" : return_list[-1]})
 
                 if save_episodes:
