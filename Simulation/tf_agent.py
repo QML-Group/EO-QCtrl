@@ -48,9 +48,6 @@ action_size = len(h_c) * number_of_timesteps
 action_shape = (len(h_c), number_of_timesteps)
 time = np.linspace(0, gate_duration, number_of_timesteps)
 
-
-
-
 # Hyperparameters
 
 fc_layer_params = (50, 30, 10)
@@ -62,7 +59,6 @@ replay_buffer_capacity = 10
 
 env_train_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
 env_eval_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
-
 train_env = tf_py_environment.TFPyEnvironment(env_train_py)
 eval_env = tf_py_environment.TFPyEnvironment(env_eval_py)
 
@@ -153,7 +149,8 @@ iteration_list += iteration_list_
 
 # Plotting the results 
 
-
+final_val = episode_list[-1]
+final_pulse = final_val.action.numpy()[0, 0, :]
 avg_eval_reward_per_episode = []
 avg_train_reward_per_episode = []
 iteration_space = np.linspace(1, max_train_steps*num_iterations, max_train_steps*num_iterations)
@@ -164,8 +161,7 @@ for i in range(num_iterations):
     avg_eval_reward_per_episode.append(sum_eval/max_train_steps)
     avg_train_reward_per_episode.append(sum_train/max_train_steps)
 
-
-
+# Avg Fidelity v/s episode
 fig, ax1 = plt.subplots()
 ax2 = ax1.twinx()
 ax1.plot(iteration_list, avg_eval_reward_per_episode, label = "Average Fidelity per episode Eval Env", color = "blue")
@@ -178,6 +174,7 @@ ax1.grid()
 ax2.legend(loc = "upper right")
 plt.show()
 
+# Fidelity v/s iteration nr
 plt.plot(iteration_space, env_eval_py.reward_list, label = "Fidelity Eval Env")
 #plt.plot(iteration_space, env_train_py.reward_list, label = "Fidelity Train Env")
 plt.xlabel("Iteration number (# episodes x # cycles)")
@@ -186,9 +183,7 @@ plt.grid()
 plt.legend()
 plt.show()
 
-final_val = episode_list[-1]
-final_pulse = final_val.action.numpy()[0, 0, :]
-
+# Final pulse plot
 
 #plt.plot(time, final_pulse)
 plt.step(time, final_pulse)
