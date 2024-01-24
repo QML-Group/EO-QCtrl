@@ -33,7 +33,7 @@ t1 = 100 * gate_duration
 t2 = 100 * gate_duration
 number_of_timesteps = 10
 number_of_grape_iterations = 500
-max_train_steps = 10 # Inner "for loop"
+max_train_steps = 100 # Inner "for loop"
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
 numpy_initial_state = fc.convert_qutip_to_numpy(initial_state)
@@ -55,7 +55,7 @@ iteration_space = np.linspace(1, 100, 100)
 
 fc_layer_params = (100, 50, 30)
 learning_rate = 1e-3
-num_iterations = 10 # Number of episodes "outer for loop in training loop"
+num_iterations = 100 # Number of episodes "outer for loop in training loop"
 collect_episodes_per_iteration = 1
 eval_interval = 1
 replay_buffer_capacity = 7 * max_train_steps
@@ -150,6 +150,8 @@ return_list_, episode_list_, iteration_list_ = run_training(
 return_list += return_list_
 episode_list += episode_list_
 iteration_list += iteration_list_
+
+# Plotting the results 
 
 reward_per_episode = []
 for i in range(max_train_steps):
