@@ -53,12 +53,12 @@ time = np.linspace(0, gate_duration, number_of_timesteps)
 
 # Hyperparameters
 
-fc_layer_params = (100, 100, 100)
+fc_layer_params = (50, 30, 10)
 learning_rate = 1e-3
 num_iterations = 800 # Number of episodes "outer for loop in training loop"
 collect_episodes_per_iteration = 1
 eval_interval = 1
-replay_buffer_capacity = 100
+replay_buffer_capacity = 10
 
 env_train_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
 env_eval_py = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, max_train_steps)
@@ -188,6 +188,7 @@ plt.show()
 
 final_val = episode_list[-1]
 final_pulse = final_val.action.numpy()[0, 0, :]
+
 
 #plt.plot(time, final_pulse)
 plt.step(time, final_pulse)
