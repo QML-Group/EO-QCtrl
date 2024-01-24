@@ -66,11 +66,12 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.h_drift_numpy = fc.convert_qutip_to_numpy(h_drift)
         self.h_control_numpy = fc.convert_qutip_list_to_numpy(h_control)
         self.action_shape = (len(h_control), timesteps)
-        self.state_shape = (n_q**2, n_q**2)
-        self.state_size = (n_q * n_q)**2
+        self.state_shape = (2**(n_q), 2**(n_q))
+        self.state_size = 2*(2**(2*n_q))
         self.current_step = 0
         self._episode_ended = False
         self.n_steps = n_steps
+        self.dm_target = (Qobj(self.u_target) * self.initial_state) * (Qobj(self.u_target) * self.initial_state).dag()
 
         self.create_environment()
 
@@ -117,11 +118,11 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         """
 
         return array_spec.BoundedArraySpec(
-            shape = ((self.n_q * self.n_q)**2,),
+            shape = (2*(2**(2*self.n_q)),),
             dtype = np.float32,
             name = "density matrix",
-            minimum = np.zeros((self.n_q * self.n_q)**2, dtype=np.float32),
-            maximum = np.ones((self.n_q * self.n_q)**2, dtype = np.float32),
+            minimum = np.zeros(2*(2**(2*self.n_q)), dtype=np.float32),
+            maximum = np.ones(2*(2**(2*self.n_q)), dtype = np.float32),
         )
 
     def _reset(self):
@@ -131,9 +132,14 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.current_step = 0
         self._episode_ended = False 
         self.initial_dm = self.initial_state * self.initial_state.dag()
-        self.initial_dm = np.ndarray.astype(fc.convert_qutip_to_numpy(self.initial_dm).flatten(), np.float32)
+        self.initial_dm_np = fc.convert_qutip_to_numpy(self.initial_dm)
+        self.initial_dm_np_re = self.initial_dm_np.real
+        self.initial_dm_np_im = self.initial_dm_np.imag
+        self.initial_dm_np_re_flat = self.initial_dm_np_re.flatten()
+        self.initial_dm_np_im_flat = self.initial_dm_np_im.flatten()
+        self.combined_initial_dm = np.ndarray.astype(np.hstack((self.initial_dm_np_re_flat, self.initial_dm_np_im_flat)), dtype = np.float32)
 
-        return ts.restart(self.initial_dm)
+        return ts.restart(self.combined_initial_dm)
 
     def _step(self, action):
 
@@ -149,10 +155,8 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         
         if self.current_step < self.n_steps:
             
-            next_state = self.run_pulses(action_2d)
-            next_state_formatted = np.ndarray.astype(fc.convert_qutip_to_numpy(next_state).flatten(), np.float32)
+            next_state, reward = self.calculate_fidelity_reward(action_2d)
             terminal = False
-            reward = (self.calculate_fidelity_reward(next_state))
 
             if self.current_step == self.n_steps - 1:
                 
@@ -167,10 +171,10 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         
         if terminal: 
             self._episode_ended = True
-            return ts.termination(next_state_formatted, reward)
+            return ts.termination(next_state, reward)
         
         else:
-            return ts.transition(next_state_formatted, reward)
+            return ts.transition(next_state, reward)
 
     def run_pulses(self, pulses, plot_pulses = False):
 
@@ -199,7 +203,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         return density_matrix
     
-    def calculate_fidelity_reward(self, result, plot_result = False):
+    def calculate_fidelity_reward(self, pulses, plot_result = False):
 
         """
         Calculates Fidelity Reward for a specific Qutip result.
@@ -210,16 +214,27 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         Returns
         -------
+
+        combined_dm_sim_np_im_flat : Flattened and combined real and imaginary part of the density matrix after simulation
+
         r_f : Fidelity Reward for a specific Qutip result, Initial State, and Target Unitary.
         """
 
-        dm_sim = result
+        for i in range(len(pulses[:, 0])):
+            self.environment.pulses[i].coeff = pulses[i]
 
-        qutip_u_target = Qobj(self.u_target)
-        sv_target = qutip_u_target * self.initial_state
-        dm_target = sv_target * sv_target.dag()
+        result = self.environment.run_state(init_state = self.initial_state)
+        
+        dm_sim = result.states[-1]
 
-        r_f = fidelity(dm_sim, dm_target)
+        dm_sim_np = fc.convert_qutip_to_numpy(dm_sim)
+        dm_sim_np_re = dm_sim_np.real
+        dm_sim_np_im = dm_sim_np.imag
+        dm_sim_np_re_flat = dm_sim_np_re.flatten()
+        dm_sim_np_im_flat = dm_sim_np_im.flatten()
+        combined_dm_re_im_flat = np.ndarray.astype(np.hstack((dm_sim_np_re_flat, dm_sim_np_im_flat)), dtype = np.float32)
+        
+        r_f = fidelity(dm_sim, self.dm_target)
 
         if plot_result == True:
 
@@ -227,7 +242,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
               ylabels = [r'$\vert 00\rangle$', r'$\vert 01\rangle$', r'$\vert 10\rangle$', r'$\vert 11\rangle$'])
             plt.show()
 
-        return r_f
+        return combined_dm_re_im_flat, r_f
     
     def calculate_energetic_cost(self, pulses, return_normalized = False):
 
