@@ -33,7 +33,7 @@ t1 = 100 * gate_duration
 t2 = 100 * gate_duration
 number_of_timesteps = 10
 number_of_grape_iterations = 500
-max_train_steps = 100 # Inner "for loop"
+max_train_steps = 10 # Inner "for loop"
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
 numpy_initial_state = fc.convert_qutip_to_numpy(initial_state)
@@ -47,14 +47,16 @@ state_shape = (number_qubits**2, number_qubits**2)
 action_size = len(h_c) * number_of_timesteps
 action_shape = (len(h_c), number_of_timesteps)
 time = np.linspace(0, gate_duration, number_of_timesteps)
+iteration_space = np.linspace(1, 100, 100)
+
 
 
 # Hyperparameters
 
 fc_layer_params = (100, 50, 30)
 learning_rate = 1e-3
-num_iterations = 100 # Number of episodes "outer for loop in training loop"
-collect_episodes_per_iteration = 2
+num_iterations = 10 # Number of episodes "outer for loop in training loop"
+collect_episodes_per_iteration = 1
 eval_interval = 1
 replay_buffer_capacity = 7 * max_train_steps
 
@@ -128,9 +130,6 @@ tf_agent.train = common.function(tf_agent.train)
 
 # Training the agent 
 
-final_time_step, policy_state = eval_driver.run()
-print("Initial Average Return:", avg_return.result().numpy())
-
 return_list = []
 episode_list = []
 iteration_list = []
@@ -152,14 +151,22 @@ return_list += return_list_
 episode_list += episode_list_
 iteration_list += iteration_list_
 
-#print(return_list)
-#print(iteration_list)
-fig, ax = plt.subplots()
-ax.plot(iteration_list, return_list)
+reward_per_episode = []
+for i in range(max_train_steps):
+    sum = np.sum(env_eval_py.reward_list[10*i : 10 + 10*i])
+    reward_per_episode.append(sum)
+    sum = 0
+
+fig, ax1 = plt.subplots()
+ax2 = ax1.twinx()
+ax1.plot(iteration_list, reward_per_episode, label = "Reward per episode", color = "blue")
+ax2.plot(iteration_list, return_list, label = "Total Average Return per episode", color = "orange")
+ax1.set_ylabel("Total Reward per Episode")
+ax2.set_ylabel("Total Average Return per Episode")
+ax1.legend()
+ax1.grid()
+ax2.legend()
 plt.show()
 
 final_val = episode_list[-1]
 final_pulse = final_val.action.numpy()[0, 0, :]
-
-plt.plot(time, final_pulse)
-plt.show()
