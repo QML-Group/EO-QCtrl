@@ -4,9 +4,9 @@ from qutip_qip.operations import expand_operator, toffoli, snot
 import functions as fc
 from qutip.metrics import fidelity
 from simulator import QuantumEnvironment
+from QuantumRLagent import QuantumRLAgent
 import tensorflow as tf 
 from scipy.optimize import minimize 
-
 
 # Input Parameters
 
@@ -18,32 +18,30 @@ number_qubits = 2
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-number_of_timesteps = 10
-number_of_grape_iterations = 1000
+number_of_timesteps = 100
+number_of_grape_iterations = 500
 initial_state = basis(4, 2)
 weight_fidelity = 1
 weight_energy = 0
 epsilon_f = 1
 epsilon_e = 100
+n_cycles = 1
+num_episodes = 500
 
-# Test Quantum Environment Class
+# Test Quantum RL Agent Class
 
-Environment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations) # Create instance of Quantum Environment
+TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 
-pulses = Environment.run_grape_optimization(weight_fidelity, weight_energy, epsilon_f, epsilon_e) # Calculate pulses by EO-GRAPE algorithm
+EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 
-energy = Environment.calculate_energetic_cost(pulses) # Calculate energetic cost of pulses
+RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes)
 
-result = Environment.run_pulses(pulses, plot_pulses = True) # Run the EO-GRAPE pulses on the environment
+RLAgent.run_training()
 
-reward = Environment.calculate_fidelity_reward(result, plot_result = True) # Calculate the Fidelity reward of this set of pulses
+RLAgent.plot_fidelity_per_iteration()
 
-#Environment.plot_grape_pulses(pulses) # Plot the EO-GRAPE generated pulses
+RLAgent.plot_final_pulse()
 
-#Environment.plot_tomography() # Plot Tomography of the final unitary and target unitary 
+_, fidelity = EvaluationEnvironment.calculate_fidelity_reward(RLAgent.pulse_2d, plot_result = True)
 
-#Environment.plot_du() # Plot gradient versus GRAPE iterations
-
-#Environment.plot_cost_function() # Plot cost function versus GRAPE iterations
-
-print(f"Fidelity reward is: {reward}") # Print energetic cost and fidelity reward of this set of pulses
+print(f"Final Pulse Fidelity is: {fidelity}")

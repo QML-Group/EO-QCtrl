@@ -4,7 +4,7 @@ from qutip_qip.operations import expand_operator, toffoli, snot
 from tf_agents.typing.types import NestedArraySpec
 import functions as fc
 from qutip.metrics import fidelity
-from simulator import QuantumEnvironment, run_training
+from simulator import QuantumEnvironment
 import tensorflow as tf 
 from scipy.optimize import minimize 
 from keras import layers, models 
@@ -215,11 +215,15 @@ class QuantumRLAgent:
 
         self.timespace = np.linspace(0, self.env_eval_py.pulse_duration, self.env_eval_py.timesteps)
 
-        final_val = self.episode_list[-1]
-        final_pulse = final_val.action.numpy()[0, 0, :]
+        self.final_val = self.episode_list[-1]
+        self.final_pulse = self.final_val.action.numpy()[0, 0, :]
 
-        plt.step(self.timespace, final_pulse)
-        plt.axhline(y = 0, color = "grey", ls = ".")
+        self.pulse_2d = np.reshape(self.final_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
+
+        for i in range(len(self.env_train_py.h_control)):
+            plt.step(self.timespace, self.pulse_2d[i])
+
+        plt.axhline(y = 0, color = "grey", ls = "dashed")
         plt.xlabel("Time (a.u.)")
         plt.ylabel(r"$\sigma_{xx}$")
         plt.grid()
