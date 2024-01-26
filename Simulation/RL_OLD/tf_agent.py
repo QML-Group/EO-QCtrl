@@ -20,9 +20,9 @@ from tf_agents.networks import actor_distribution_network
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
-tf.random.set_seed(12357111317)
+#tf.random.set_seed(12357111317)
 
-# Initial parameters 
+# Initial parameters QEnv
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 h_c = [tensor(identity(2), sigmax())]
 h_l = [r'$u_{1x}$', r'$u_{2x}$', r'$u_{xx}$'] 
@@ -31,9 +31,8 @@ number_qubits = 2
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-number_of_timesteps = 100
+number_of_timesteps = 10
 number_of_grape_iterations = 500
-max_train_steps = 1 # Inner "for loop"
 initial_state = basis(4, 2)
 initial_dm = initial_state * initial_state.dag()
 numpy_initial_state = fc.convert_qutip_to_numpy(initial_state)
@@ -42,17 +41,13 @@ weight_fidelity = 1
 weight_energy = 0
 epsilon_f = 1
 epsilon_e = 100
-state_size = (2*number_qubits)**2
-state_shape = (number_qubits**2, number_qubits**2)
-action_size = len(h_c) * number_of_timesteps
-action_shape = (len(h_c), number_of_timesteps)
 time = np.linspace(0, gate_duration, number_of_timesteps)
 
 # Hyperparameters
-
-fc_layer_params = (50, 30, 10)
+max_train_steps = 1
+fc_layer_params = (100, 100, 100)
 learning_rate = 1e-3
-num_iterations = 800 # Number of episodes "outer for loop in training loop"
+num_iterations = 200 # Number of episodes "outer for loop in training loop"
 collect_episodes_per_iteration = 1
 eval_interval = 1
 replay_buffer_capacity = 10
@@ -192,3 +187,5 @@ plt.xlabel("Time")
 plt.ylabel(r"$\sigma_{xx}$")
 plt.grid()
 plt.show()
+
+actor_net.summary()
