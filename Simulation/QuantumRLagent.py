@@ -192,5 +192,3 @@ class QuantumRLagent:
     def show_summary(self):
 
         self.actor_net.summary()
-
-
