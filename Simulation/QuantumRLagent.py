@@ -207,6 +207,18 @@ class QuantumRLAgent:
         plt.grid()
         plt.show()
 
+    def return_final_pulse(self):
+
+        """
+        Returns final action of agent
+        """
+
+        self.final_val = self.episode_list[-1]
+        self.final_pulse = self.final_val.action.numpy()[0, 0, :]
+        self.pulse_2d = np.reshape(self.final_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
+
+        return self.pulse_2d
+    
     def plot_final_pulse(self):
 
         """

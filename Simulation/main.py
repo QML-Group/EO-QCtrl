@@ -8,9 +8,9 @@ from input import *
 
 # Test Quantum RL Agent Class
 
-TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 
-EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 
 RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes)
 
@@ -18,8 +18,10 @@ RLAgent.run_training()
 
 RLAgent.plot_fidelity_per_iteration()
 
-RLAgent.plot_final_pulse()
+pulses = RLAgent.return_final_pulse()
 
-_, fidelity = EvaluationEnvironment.calculate_fidelity_reward(RLAgent.pulse_2d, plot_result = True)
+_, fidelity = EvaluationEnvironment.calculate_fidelity_reward(pulses, plot_result = True)
+
+EvaluationEnvironment.plot_rl_pulses(pulses)
 
 print(f"Final Pulse Fidelity is: {fidelity}")
