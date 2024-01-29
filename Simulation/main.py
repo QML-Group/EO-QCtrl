@@ -7,11 +7,11 @@ from QuantumRLagent import QuantumRLAgent
 from input import *
 import matplotlib.pyplot as plt
 
-t1_t2 = [0.1 * gate_duration, 1 * gate_duration, 10 * gate_duration, 100 * gate_duration, 1000 * gate_duration, 10000 * gate_duration]
+t1_t2 = [0.1 * gate_duration, 0.5 * gate_duration,  1 * gate_duration, 5 * gate_duration, 10 * gate_duration, 50 * gate_duration, 100 * gate_duration, 500 * gate_duration, 1000 * gate_duration, 5000 * gate_duration]
 
-rl_fidelities = []
+rl_errorrate = []
 
-grape_fidelities = []
+grape_errorrate = []
 
 for index, t1_t2_value in enumerate(t1_t2):
         
@@ -36,19 +36,20 @@ for index, t1_t2_value in enumerate(t1_t2):
     # Calculate Fidelity of EO-GRAPE Pulse
     _, fidelity_grape = EvaluationEnvironment.calculate_fidelity_reward(grape_pulse, plot_result = False)
 
-    rl_fidelities.append(fidelity_rl)
-    grape_fidelities.append(fidelity_grape)
+    rl_errorrate.append(1 - fidelity_rl)
+    grape_errorrate.append(1 - fidelity_grape)
 
 fig, ax = plt.subplots()
 ax.set_xscale('log')
-ax.axhline(y = 0.99, color = "grey", ls = "dashed", label = "$F = 0.99$")
-ax.plot(t1_t2, rl_fidelities, label = "QRLA", marker = "d", color = "#03080c")
-ax.plot(t1_t2, grape_fidelities, label = "EO-GRAPE", marker = "d", color = "#5b97ca")
-ax.set_ylim(0, 1)
+ax.set_yscale('log')
+ax.axhline(y = 0.01, color = "grey", ls = "dashed", label = "$\epsilon = 0.01$")
+ax.plot(t1_t2, rl_errorrate, label = "QRLA", marker = "d", color = "#03080c")
+ax.plot(t1_t2, grape_errorrate, label = "EO-GRAPE", marker = "d", color = "#5b97ca")
+ax.set_ylim(0, 1.1)
 ax.set_xlabel("Processor Decoherence time ($\mu s$)")
-ax.set_ylabel("Fidelity (%)")
+ax.set_ylabel("CNOT pulse error rate ($1-F$)")
 ax.grid()
-ax.legend(loc = "lower right")
+ax.legend(loc = "upper right")
 plt.show()
 
 
