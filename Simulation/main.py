@@ -5,27 +5,55 @@ from qutip.metrics import fidelity
 from simulator import QuantumEnvironment
 from QuantumRLagent import QuantumRLAgent
 from input import *
+import matplotlib.pyplot as plt
 
-# Initialize Environments
-TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes, fc_layer_params = (50, 30, 10))
+t1_t2 = [0.1 * gate_duration, 1 * gate_duration, 10 * gate_duration, 100 * gate_duration, 1000 * gate_duration, 10000 * gate_duration]
 
-# Run Training
-RLAgent.run_training()
+rl_fidelities = []
 
-# Retrieve highest fidelity pulse
-max_fid_pulse = RLAgent.return_highest_fidelity_pulse()
+grape_fidelities = []
 
-# Run pulse on Evaluation Environment to cross-check
-_, fidelity_rl = EvaluationEnvironment.calculate_fidelity_reward(max_fid_pulse, plot_result = False)
+for index, t1_t2_value in enumerate(t1_t2):
+        
+    # Initialize Environments
+    TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1_t2_value, t1_t2_value, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+    EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1_t2_value, t1_t2_value, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+    RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes, fc_layer_params = (50, 30, 10))
 
-# Run Fidelity Only EO-GRAPE Algorithm
-grape_pulse = EvaluationEnvironment.run_grape_optimization(w_f = 1.0, w_e = 0.0, eps_f = 1, eps_e = 1000)
+    # Run Training
+    RLAgent.run_training()
 
-# Calculate Fidelity of EO-GRAPE Pulse
-_, fidelity_grape = EvaluationEnvironment.calculate_fidelity_reward(grape_pulse, plot_result = False)
+    # Retrieve highest fidelity pulse
+    max_fid_pulse = RLAgent.return_highest_fidelity_pulse()
 
+    # Run pulse on Evaluation Environment to cross-check
+    _, fidelity_rl = EvaluationEnvironment.calculate_fidelity_reward(max_fid_pulse, plot_result = False)
+
+    # Run Fidelity Only EO-GRAPE Algorithm
+    if index == 0:
+        grape_pulse = EvaluationEnvironment.run_grape_optimization(w_f = 1.0, w_e = 0.0, eps_f = 1, eps_e = 1000)
+
+    # Calculate Fidelity of EO-GRAPE Pulse
+    _, fidelity_grape = EvaluationEnvironment.calculate_fidelity_reward(grape_pulse, plot_result = False)
+
+    rl_fidelities.append(fidelity_rl)
+    grape_fidelities.append(fidelity_grape)
+
+fig, ax = plt.subplots()
+ax.set_xscale('log')
+ax.axhline(y = 0.99, color = "grey", ls = "dashed", label = "$F = 0.99$")
+ax.plot(t1_t2, rl_fidelities, label = "QRLA", marker = "d", color = "#03080c")
+ax.plot(t1_t2, grape_fidelities, label = "EO-GRAPE", marker = "d", color = "#5b97ca")
+ax.set_ylim(0, 1)
+ax.set_xlabel("Processor Decoherence time ($\mu s$)")
+ax.set_ylabel("Fidelity (%)")
+ax.grid()
+ax.legend(loc = "lower right")
+plt.show()
+
+
+
+"""
 # Plot and Print Results
 EvaluationEnvironment.plot_rl_pulses(max_fid_pulse)
 EvaluationEnvironment.plot_grape_pulses(grape_pulse)
@@ -33,3 +61,4 @@ print(f"T1: {t1} | T2: {t2}")
 print(f"Target Unitary: {label_cnot}")
 print(f"Number of training episodes: {num_episodes} | Number of GRAPE Iterations: {number_of_grape_iterations} | Number of Timesteps: {number_of_timesteps}")
 print(f"RL Fidelity is: {fidelity_rl} | GRAPE Fidelity is: {fidelity_grape}")
+"""
