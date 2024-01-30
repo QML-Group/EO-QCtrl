@@ -24,13 +24,23 @@ _, fidelity_rl = EvaluationEnvironment.calculate_fidelity_reward(max_fid_pulse, 
 
 # Print Results
 
-print(f"    RESULTS 
-      -------------------
-      < T1: {t1} | T2: {t2} >
-      < Target Unitary: {label_cnot} >
-      < Number of training episodes: {num_episodes} | Number of GRAPE Iterations: {number_of_grape_iterations} | Number of Timesteps: {number_of_timesteps} >
-      < RL Fidelity is: {fidelity_rl} >")
+result = f"""
 
-# Plot Results 
+RESULTS
+-------
 
+RL Fidelity is: {fidelity_rl}
+
+T1 : {t1} | T2: {t2}
+
+Target Unitary: {label_cnot}
+
+Number of training episodes: {num_episodes}
+
+Number of timesteps: {number_of_timesteps}
+
+
+"""
+
+print(result)
 RLAgent.plot_fidelity_reward_per_iteration()
