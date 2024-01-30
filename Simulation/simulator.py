@@ -73,6 +73,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self._episode_ended = False
         self.n_steps = n_steps
         self.dm_target = (Qobj(self.u_target) * self.initial_state) * (Qobj(self.u_target) * self.initial_state).dag()
+        self.fidelity_list = []
         self.reward_list = []
 
         self.create_environment()
@@ -159,12 +160,14 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             
             if self.reward_counter == 0:
                 next_state, reward = self.calculate_fidelity_reward(action_2d)
+                self.fidelity_list.append(reward)
                 self.reward_list.append(reward)
 
             else:
                 next_state, fidelity = self.calculate_fidelity_reward(action_2d)
-                self.reward_list.append(fidelity)
-                reward = self.reward_list[self.reward_counter] - self.reward_list[self.reward_counter - 1]
+                self.fidelity_list.append(fidelity)
+                reward = self.fidelity_list[self.reward_counter] - self.fidelity_list[self.reward_counter - 1]
+                self.reward_list.append(reward)
 
             terminal = False
 
@@ -176,7 +179,6 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             terminal = True
             reward = 0
             next_state = 0
-        #print(self.reward_list)
         self.current_step += 1
         self.reward_counter += 1
         

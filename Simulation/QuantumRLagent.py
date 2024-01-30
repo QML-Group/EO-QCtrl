@@ -177,7 +177,7 @@ class QuantumRLAgent:
         avg_eval_reward_per_episode = []
 
         for i in range(self.num_iterations):
-            sum_eval = np.sum(self.env_eval_py.reward_list[self.num_cycles * i : self.num_cycles + self.num_cycles * i])
+            sum_eval = np.sum(self.env_eval_py.fidelity_list[self.num_cycles * i : self.num_cycles + self.num_cycles * i])
             avg_eval_reward_per_episode.append(sum_eval/self.num_cycles)
 
         fig, ax1 = plt.subplots()
@@ -192,19 +192,20 @@ class QuantumRLAgent:
         ax1.grid()
         plt.show()
 
-    def plot_fidelity_per_iteration(self):
+    def plot_fidelity_reward_per_iteration(self):
 
         """
         Plots fidelity per iteration
         """
 
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
-
-        plt.plot(self.iteration_space, self.env_eval_py.reward_list, label = "Fidelity per Iteration")
-        plt.xlabel("Iteration number (# cycles x # episodes)")
-        plt.ylabel("Fidelity per iteration")
-        plt.legend()
-        plt.grid()
+        plt.axhline(y = 0, color = "grey", ls = "dashed")
+        plt.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = "#03080c")
+        plt.plot(self.iteration_space, self.env_eval_py.reward_list, label = "Reward", marker = "d", color = "#5b97ca")
+        plt.xlabel("Episode number")
+        plt.ylabel("Fidelity / Reward")
+        plt.legend(loc = "upper left")
+        #plt.grid()
         plt.show()
 
     def return_final_pulse(self):
@@ -225,7 +226,7 @@ class QuantumRLAgent:
         Returns the pulse with the highest fidelity
         """
     
-        self.max_index = self.env_eval_py.reward_list.index(max(self.env_eval_py.reward_list))
+        self.max_index = self.env_eval_py.fidelity_list.index(max(self.env_eval_py.fidelity_list))
         self.max_val = self.episode_list[self.max_index]
         self.max_pulse = self.max_val.action.numpy()[0, 0, :]
         self.max_pulse_2d = np.reshape(self.max_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
