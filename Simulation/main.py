@@ -3,7 +3,7 @@ from qutip import basis, fidelity, identity, sigmax, sigmaz, tensor, destroy
 import functions as fc
 from qutip.metrics import fidelity
 from simulator import QuantumEnvironment
-from QuantumRLagent import QuantumRLAgent
+from qrla import QuantumRLAgent
 from input import *
 import matplotlib.pyplot as plt
 
