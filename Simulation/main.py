@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
    
 # Initialize Environments
 TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+
 EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+
 RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes, fc_layer_params = (50, 30, 10))
 
 # Run Training
@@ -31,4 +33,3 @@ print(f"RL Fidelity is: {fidelity_rl}")
 # Plot Results 
 
 RLAgent.plot_fidelity_reward_per_iteration()
-

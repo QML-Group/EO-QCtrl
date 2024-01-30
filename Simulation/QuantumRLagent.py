@@ -199,13 +199,17 @@ class QuantumRLAgent:
         """
 
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
-        plt.axhline(y = 0, color = "grey", ls = "dashed")
-        plt.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = "#03080c")
-        plt.plot(self.iteration_space, self.env_eval_py.reward_list, label = "Reward", marker = "d", color = "#5b97ca")
-        plt.xlabel("Episode number")
-        plt.ylabel("Fidelity / Reward")
-        plt.legend(loc = "upper left")
-        #plt.grid()
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        ax2.axhline(y = 0, color = "grey")
+        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = "#03080c", markevery = 20)
+        ax2.plot(self.iteration_space, self.env_eval_py.reward_list, ls = "dashed", label = "Reward", marker = "d", color = "#5b97ca", markevery = 20)
+        ax1.set_xlabel("Episode number")
+        ax1.set_ylabel("Fidelity")
+        ax2.set_ylabel("Reward")
+        ax1.legend(loc = (0.7, 0.45))
+        ax2.legend(loc = (0.7, 0.55))
+        fig.tight_layout()
         plt.show()
 
     def return_final_pulse(self):
