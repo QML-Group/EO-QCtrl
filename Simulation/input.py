@@ -21,4 +21,4 @@ weight_energy = 0
 epsilon_f = 1
 epsilon_e = 100
 n_cycles = 1
-num_episodes = 10
+num_episodes = 1000

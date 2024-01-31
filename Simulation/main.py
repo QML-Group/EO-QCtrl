@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 # Initialize Environments
 TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, initial_state, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes, fc_layer_params = (50, 30, 10))
+RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_episodes, fc_layer_params = (50, 30, 10), num_cycles = n_cycles)
 
 # Run Training
 RLAgent.run_training()
 
 # Retrieve highest fidelity pulse
-max_fid_pulse = RLAgent.return_highest_fidelity_pulse()
+max_fid_pulse = RLAgent.get_highest_fidelity_pulse()
 
 # Run pulse on Evaluation Environment to cross-check
 _, fidelity_rl = EvaluationEnvironment.calculate_fidelity_reward(max_fid_pulse, plot_result = False)
@@ -43,4 +43,10 @@ Number of timesteps: {number_of_timesteps}
 """
 
 print(result)
+
+RLAgent.plot_fidelity_return_per_episode()
 RLAgent.plot_fidelity_reward_per_iteration()
+
+RLAgent.plot_final_pulse()
+
+TrainingEnvironment.plot_rl_pulses(max_fid_pulse)

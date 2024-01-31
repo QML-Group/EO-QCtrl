@@ -75,7 +75,7 @@ class QuantumRLAgent:
         )
 
         self.optimizer = keras.optimizers.Adam(learning_rate = self.learning_rate)
-
+        
         self.train_step_counter = tf.compat.v2.Variable(0)
 
         self.tf_agent = reinforce_agent.ReinforceAgent(
@@ -104,7 +104,9 @@ class QuantumRLAgent:
             max_length = self.num_cycles + 1 
         )
 
-        self.avg_return = tf_metrics.AverageReturnMetric()
+        #self.avg_return = tf_metrics.AverageReturnMetric()
+
+        self.avg_return = tf_metrics.MaxReturnMetric()
 
         self.eval_observers = [self.avg_return, self.eval_replay_buffer.add_batch]
         self.eval_driver = dynamic_episode_driver.DynamicEpisodeDriver(
@@ -142,8 +144,15 @@ class QuantumRLAgent:
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []
+ 
 
         with trange(self.num_iterations, dynamic_ncols = False) as t:
+
+            # Probably here need to write another for loop, where for each loop we generate a new initial state
+            # new_initial_state = qutip.random_objects.rand_ket(N = 4)
+            # self.env_train_py.initial_state = new_initial_state
+            # self.env_eval_py.initial_state = new_initial_state
+
             for i in t:
 
                 t.set_description(f"Episode {i}")
@@ -182,14 +191,16 @@ class QuantumRLAgent:
 
         fig, ax1 = plt.subplots()
         ax2 = ax1.twinx()
-        ax1.plot(self.iteration_list, avg_eval_reward_per_episode, label = "Average Fidelity per Episode", color = "blue")
-        ax2.plot(self.iteration_list, self.return_list, label = "Average Return per Episode", color = "orange")
-        ax1.set_ylabel("Average Fidelity per Episode")
-        ax2.set_ylabel("Average Return per Episode")
+        ax2.axhline(y = 0, color = "grey")
+        ax1.plot(self.iteration_list, avg_eval_reward_per_episode, label = "Fidelity", marker = "d", color = "#03080c", markevery = 20)
+        ax2.plot(self.iteration_list, self.return_list, label = "Return", marker = "d", color = "#5b97ca", markevery = 20)
+        ax1.set_ylabel("Fidelity")
+        ax2.set_ylabel("Return")
         ax1.set_xlabel("Episode number")
-        ax1.legend(loc = "upper left")
-        ax2.legend(loc = "upper right")
-        ax1.grid()
+        ax1.legend(loc = (0.7, 0.45))
+        ax2.legend(loc = (0.7, 0.55))
+        fig.tight_layout()
+        #ax1.grid()
         plt.show()
 
     def plot_fidelity_reward_per_iteration(self):
@@ -212,7 +223,7 @@ class QuantumRLAgent:
         fig.tight_layout()
         plt.show()
 
-    def return_final_pulse(self):
+    def get_final_pulse(self):
 
         """
         Returns final action of agent
@@ -224,7 +235,7 @@ class QuantumRLAgent:
 
         return self.pulse_2d
     
-    def return_highest_fidelity_pulse(self):
+    def get_highest_fidelity_pulse(self):
 
         """
         Returns the pulse with the highest fidelity

@@ -110,8 +110,8 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             shape = (len(self.h_control) * self.timesteps,),
             dtype = np.float32,
             name = "pulses",
-            minimum = -3,
-            maximum = 3,
+            minimum = -2,
+            maximum = 2,
         )
 
     def observation_spec(self):
@@ -166,7 +166,8 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             else:
                 next_state, fidelity = self.calculate_fidelity_reward(action_2d)
                 self.fidelity_list.append(fidelity)
-                reward = self.fidelity_list[self.reward_counter] - self.fidelity_list[self.reward_counter - 1]
+                #reward = self.fidelity_list[self.reward_counter] - self.fidelity_list[self.reward_counter - 1]
+                reward = fidelity
                 self.reward_list.append(reward)
 
             terminal = False
