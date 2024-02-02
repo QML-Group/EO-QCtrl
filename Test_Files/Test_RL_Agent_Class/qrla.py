@@ -22,10 +22,11 @@ from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 from tqdm.auto import trange
 from qutip import rand_ket
+from tf_agents.policies import PolicySaver
 
 class QuantumRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 100):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 100, policy = None):
         
         """
         QuantumRLAgent Class
@@ -57,10 +58,11 @@ class QuantumRLAgent:
         self.collect_episodes_per_iteration = collect_episodes_per_iteration
         self.eval_interval = eval_interval
         self.replay_buffer_capacity = replay_buffer_capacity
+        self.policy = policy
 
-        self.create_network_agent()
+        self.create_network_agent(policy = policy)
 
-    def create_network_agent(self):
+    def create_network_agent(self, policy = None):
 
         """
         Create Neural Network and Agent Instance based on Quantum Environment Class
@@ -89,9 +91,15 @@ class QuantumRLAgent:
         )
 
         self.tf_agent.initialize()
+        
+        if policy is None: 
 
-        self.eval_policy = self.tf_agent.policy
-        self.collect_policy = self.tf_agent.collect_policy
+            self.eval_policy = self.tf_agent.policy
+            self.collect_policy = self.tf_agent.collect_policy
+
+        else: 
+            self.eval_policy = tf.compat.v2.saved_model.load(policy)
+            self.collect_policy = tf.compat.v2.saved_model.load(policy)
 
         self.replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
             data_spec = self.tf_agent.collect_data_spec,
@@ -271,6 +279,11 @@ class QuantumRLAgent:
         """
 
         self.actor_net.summary()
+
+    def save_weights(self, directory):
+
+        my_weights = PolicySaver(self.collect_policy)
+        my_weights.save(directory)
 
 class GRAPEQRLAgent:
 
@@ -477,3 +490,7 @@ class GRAPEQRLAgent:
 
         self.actor_net.summary()
 
+    def save_weights(self, directory):
+
+        my_weights = PolicySaver(self.collect_policy)
+        my_weights.save(directory)
