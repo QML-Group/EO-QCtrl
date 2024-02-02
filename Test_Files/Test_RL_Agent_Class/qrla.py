@@ -145,16 +145,15 @@ class QuantumRLAgent:
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []
- 
+
         with trange(self.num_iterations, dynamic_ncols = False) as t:
 
             for i in t:
-                
+
                 new_initial_state = rand_ket(4)
-                #print("Training generated initial state:", new_initial_state)
                 self.env_train_py.initial_state = new_initial_state
                 self.env_eval_py.initial_state = new_initial_state
-
+        
                 t.set_description(f"Episode {i}")
 
                 if clear_buffer:
@@ -211,15 +210,12 @@ class QuantumRLAgent:
 
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
         fig, ax1 = plt.subplots()
-        ax2 = ax1.twinx()
-        ax2.axhline(y = 0, color = "grey")
-        ax2.plot(self.iteration_space, self.env_eval_py.reward_list, ls = "dashed", label = "Reward", marker = "d", color = "#5b97ca", markevery = 20)
-        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = "#03080c", markevery = 20)
+        ax1.axhline(y = 0, color = "grey")
+        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = "#03080c", markevery = 100)
+        ax1.set_ylim(0.0, 1.0)
         ax1.set_xlabel("Episode number")
         ax1.set_ylabel("Fidelity")
-        ax2.set_ylabel("Reward")
         ax1.legend(loc = (0.7, 0.45))
-        ax2.legend(loc = (0.7, 0.55))
         fig.tight_layout()
         plt.show()
 
