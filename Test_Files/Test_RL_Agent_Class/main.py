@@ -18,7 +18,7 @@ TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, 
 EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, target_unitary_cnot, timesteps = number_of_timesteps)
 
 RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_iterations_RL, fc_layer_params = (200, 100, 50, 30, 10), replay_buffer_capacity = 10)
-ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (200, 200, 200))
+ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (100, 100, 100), replay_buffer_capacity = 100)
 
 # Run Training
 
