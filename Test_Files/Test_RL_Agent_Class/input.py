@@ -22,4 +22,4 @@ weight_energy = 0
 epsilon_f = 1
 epsilon_e = 100
 n_cycles = 1
-num_iterations = 20000
+num_iterations = 2000
