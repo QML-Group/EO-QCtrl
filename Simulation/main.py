@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 
    
 # Initialize Environments
-TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, target_unitary_cnot, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
 
-TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, target_unitary_cnot, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
-EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, target_unitary_cnot, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c, h_l, target_unitary_cnot, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c, h_l, target_unitary_cnot, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
 
 ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (100, 100, 100), replay_buffer_capacity = 100)
 
