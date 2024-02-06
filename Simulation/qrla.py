@@ -26,7 +26,7 @@ from tf_agents.policies import PolicySaver
 
 class QuantumRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, initial_state = basis(4,2)):
         
         """
         QuantumRLAgent Class
@@ -59,6 +59,8 @@ class QuantumRLAgent:
         self.eval_interval = eval_interval
         self.replay_buffer_capacity = replay_buffer_capacity
         self.policy = policy
+        self.rand_initial_state = rand_initial_state
+        self.initial_state = initial_state
 
         self.create_network_agent(policy = policy)
 
@@ -156,7 +158,14 @@ class QuantumRLAgent:
 
             for i in t:
 
-                new_initial_state = rand_ket(4)
+                if self.rand_initial_state == True:
+
+                    new_initial_state = rand_ket(4)
+
+                else:
+
+                    new_initial_state = self.initial_state
+
                 self.env_train_py.initial_state = new_initial_state
                 self.env_eval_py.initial_state = new_initial_state
         
@@ -217,7 +226,7 @@ class QuantumRLAgent:
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
         fig, ax1 = plt.subplots()
         ax1.axhline(y = 0, color = "grey")
-        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = '#5b97ca', markevery = 100)
+        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = '#5b97ca', markevery = 50)
         ax1.set_ylim(0.0, 1.0)
         ax1.set_xlabel("Episode number")
         ax1.set_ylabel("Fidelity")
@@ -456,7 +465,7 @@ class GRAPEQRLAgent:
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
         fig, ax1 = plt.subplots()
         ax1.axhline(y = 0, color = "grey")
-        ax1.plot(self.iteration_space, self.env_eval_py.reward_list, label = "Reward", marker = "d", color = '#5b97ca', markevery = 100)
+        ax1.plot(self.iteration_space, self.env_eval_py.reward_list, label = "Reward", marker = "d", color = '#5b97ca', markevery = 50)
         ax1.set_xlabel("Episode number")
         ax1.set_ylabel("Reward")
         ax1.legend(loc = (0.7, 0.45))
@@ -484,6 +493,8 @@ class GRAPEQRLAgent:
         self.max_pulse_2d = np.reshape(self.max_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
 
         fig, ax = plt.subplots(len(self.env_train_py.h_control))
+
+        self.timespace = np.linspace(0, self.env_eval_py.pulse_duration, self.env_eval_py.timesteps)
 
         colors = ['#03080c','#214868', '#5b97ca']
 
