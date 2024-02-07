@@ -26,7 +26,7 @@ from tf_agents.policies import PolicySaver
 
 class QuantumRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, initial_state = basis(4,2)):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, w_f, w_e, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, initial_state = basis(4,2)):
         
         """
         QuantumRLAgent Class
@@ -61,6 +61,10 @@ class QuantumRLAgent:
         self.policy = policy
         self.rand_initial_state = rand_initial_state
         self.initial_state = initial_state
+        self.env_train_py.w_f = w_f
+        self.env_eval_py.w_f = w_f
+        self.env_train_py.w_e = w_e
+        self.env_eval_py.w_e = w_e
 
         self.create_network_agent(policy = policy)
 
@@ -101,7 +105,9 @@ class QuantumRLAgent:
 
         else: 
             self.eval_policy = tf.compat.v2.saved_model.load(policy)
-            self.collect_policy = tf.compat.v2.saved_model.load(policy)
+            self.collect_policy = self.tf_agent.collect_policy
+            #self.collect_policy = tf.compat.v2.saved_model.load(policy)
+            
 
         self.replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
             data_spec = self.tf_agent.collect_data_spec,
@@ -217,7 +223,7 @@ class QuantumRLAgent:
         #ax1.grid()
         plt.show()
 
-    def plot_fidelity_reward_per_iteration(self):
+    def plot_fidelity_energy_reward_per_iteration(self):
 
         """
         Plots fidelity per iteration
@@ -225,13 +231,23 @@ class QuantumRLAgent:
 
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
         fig, ax1 = plt.subplots()
+
+        ma_fid = self.moving_average(self.env_eval_py.fidelity_list)
+        ma_energy = self.moving_average(self.env_eval_py.energy_list)
+        ma_reward = self.moving_average(self.env_eval_py.reward_list)
+        ma_iteration_space = np.arange(len(ma_fid))
+
         ax1.axhline(y = 0, color = "grey")
-        ax1.plot(self.iteration_space, self.env_eval_py.fidelity_list, label = "Fidelity", marker = "d", color = '#5b97ca', markevery = 50)
+        ax1.plot(ma_iteration_space, self.env_eval_py.fidelity_list[:len(ma_fid)], color = '#FFCCCB')
+        ax1.plot(ma_iteration_space, self.env_eval_py.energy_list[:len(ma_fid)], color = '#ECFFDC')
+        ax1.plot(ma_iteration_space, self.env_eval_py.reward_list[:len(ma_fid)], color = '#D6FFFF')
+        ax1.plot(ma_iteration_space, ma_fid, label = "Fidelity", color = '#F70D1A')
+        ax1.plot(ma_iteration_space, ma_energy, label = "Energy", color = '#7CFC00')
+        ax1.plot(ma_iteration_space, ma_reward, label = "Reward", color = '#1F51FF')
         ax1.set_ylim(0.0, 1.0)
         ax1.set_xlabel("Episode number")
-        ax1.set_ylabel("Fidelity")
-        ax1.legend(loc = (0.7, 0.45))
-        fig.suptitle("Fidelity per Iteration QRLAgent")
+        ax1.legend(loc = 'upper right')
+        fig.suptitle(f"Fidelity, Energy, and Total Reward per Iteration QRLAgent \n $w_f = {self.env_eval_py.w_f}$, $w_e = {self.env_eval_py.w_e}$")
         fig.tight_layout()
         plt.show()
 
@@ -309,6 +325,13 @@ class QuantumRLAgent:
 
         my_weights = PolicySaver(self.collect_policy)
         my_weights.save(directory)
+
+    def moving_average(self, a, n = 1000):
+
+        ret = np.cumsum(a)
+        ret[n:] = ret[n:] - ret[:-n]
+
+        return ret[n - 1:] / n
 
 class GRAPEQRLAgent:
 
@@ -518,7 +541,6 @@ class GRAPEQRLAgent:
 
         plt.show()
         
-
     def plot_final_pulse(self):
 
         """

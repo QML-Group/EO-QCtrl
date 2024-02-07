@@ -20,7 +20,7 @@ from qutip import rand_ket
 
 class QuantumEnvironment(py_environment.PyEnvironment):
    
-    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, u_target, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 1):
+    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, u_target, w_f = 1, w_e = 0, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 1):
 
         """
         QuantumEnvironment Class
@@ -73,8 +73,11 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.reward_counter = 0
         self._episode_ended = False
         self.n_steps = n_steps
+        self.w_f = w_f
+        self.w_e = w_e
         self.fidelity_list = []
         self.reward_list = []
+        self.energy_list = []
 
         self.create_environment()
 
@@ -159,17 +162,12 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         
         if self.current_step < self.n_steps:
             
-            if self.reward_counter == 0:
-                next_state, reward = self.calculate_fidelity_reward(action_2d)
-                self.fidelity_list.append(reward)
-                self.reward_list.append(reward)
-
-            else:
-                next_state, fidelity = self.calculate_fidelity_reward(action_2d)
-                self.fidelity_list.append(fidelity)
-                #reward = self.fidelity_list[self.reward_counter] - self.fidelity_list[self.reward_counter - 1]
-                reward = fidelity
-                self.reward_list.append(reward)
+            next_state, fidelity = self.calculate_fidelity_reward(action_2d)
+            energy = self.calculate_energetic_cost(action_2d)
+            self.fidelity_list.append(fidelity)
+            self.energy_list.append(energy)
+            reward = self.w_f * fidelity + self.w_e * (1 - energy)
+            self.reward_list.append(reward)
 
             terminal = False
 
@@ -261,7 +259,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         return combined_dm_re_im_flat, r_f
     
-    def calculate_energetic_cost(self, pulses, return_normalized = False):
+    def calculate_energetic_cost(self, pulses, return_normalized = True):
 
         """
         Calculate Energetic Cost of certain set of Pulses
@@ -280,6 +278,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         h_t_norm = []
         stepsize = self.pulse_duration/self.timesteps
+        self.max_u_val = 2
 
         for i in range(self.timesteps - 1):
             h_t = 0
@@ -289,7 +288,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             h_t_norm.append(np.linalg.norm(h_t))
 
         energetic_cost = np.sum(h_t_norm) * stepsize
-        energetic_cost_normalized = energetic_cost / (self.pulse_duration * np.linalg.norm(np.sum(self.h_control_numpy)))
+        energetic_cost_normalized = energetic_cost / (self.pulse_duration * self.max_u_val * np.linalg.norm(np.sum(self.h_control_numpy)))
 
         if return_normalized == True:
 
