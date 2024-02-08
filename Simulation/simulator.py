@@ -138,7 +138,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.current_step = 0
         self._episode_ended = False 
         self.initial_dm = self.initial_state * self.initial_state.dag()
-        #print("During reset:", self.initial_state)
+        
         self.initial_dm_np = fc.convert_qutip_to_numpy(self.initial_dm)
         self.initial_dm_np_re = self.initial_dm_np.real
         self.initial_dm_np_im = self.initial_dm_np.imag

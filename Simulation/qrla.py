@@ -106,7 +106,6 @@ class QuantumRLAgent:
         else: 
             self.eval_policy = tf.compat.v2.saved_model.load(policy)
             self.collect_policy = self.tf_agent.collect_policy
-            #self.collect_policy = tf.compat.v2.saved_model.load(policy)
             
 
         self.replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
@@ -335,7 +334,7 @@ class QuantumRLAgent:
 
 class GRAPEQRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 100):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 100, policy = None):
         
         """
         GRAPEQRLAgent Class
@@ -366,6 +365,7 @@ class GRAPEQRLAgent:
         self.collect_episodes_per_iteration = collect_episodes_per_iteration
         self.eval_interval = eval_interval
         self.replay_buffer_capacity = replay_buffer_capacity
+        self.policy = policy
 
         self.create_network_agent()
 
@@ -398,6 +398,15 @@ class GRAPEQRLAgent:
         )
 
         self.tf_agent.initialize()
+
+        if self.policy is None: 
+
+            self.eval_policy = self.tf_agent.policy
+            self.collect_policy = self.tf_agent.collect_policy
+
+        else: 
+            self.eval_policy = tf.compat.v2.saved_model.load(self.policy)
+            self.collect_policy = self.tf_agent.collect_policy
 
         self.eval_policy = self.tf_agent.policy
         self.collect_policy = self.tf_agent.collect_policy
