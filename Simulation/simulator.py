@@ -20,7 +20,7 @@ from qutip import rand_ket
 
 class QuantumEnvironment(py_environment.PyEnvironment):
    
-    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, u_target, w_f = 1, w_e = 0, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 1):
+    def __init__(self, n_q, h_drift, h_control, labels, t_1, t_2, u_target, w_f = 1, w_e = 0, timesteps = 500, pulse_duration = 2 * np.pi, grape_iterations = 500, n_steps = 1, sweep_noise = False):
 
         """
         QuantumEnvironment Class
@@ -78,6 +78,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.fidelity_list = []
         self.reward_list = []
         self.energy_list = []
+        self.sweep_noise = sweep_noise
 
         self.create_environment()
 
@@ -92,16 +93,20 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         simulatortimespace = np.append(timespace, timespace[-1])
 
         targets = list(range(self.n_q))
-        noise = RelaxationNoise(t1 = self.t_1, t2 = self.t_2)
 
         self.environment = Processor(N = self.n_q)
+
+        if self.sweep_noise == False:
+            noise = RelaxationNoise(t1 = self.t_1, t2 = self.t_2)
+            self.environment.add_noise(noise = noise)
+
         self.environment.add_drift(self.h_drift, targets = targets)
 
         for operator in self.h_control:
             self.environment.add_control(operator, targets = targets)
 
         self.environment.set_all_tlist(simulatortimespace)
-        self.environment.add_noise(noise = noise)
+        
 
     def action_spec(self):
 
@@ -235,8 +240,11 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         for i in range(len(pulses[:, 0])):
             self.environment.pulses[i].coeff = pulses[i]
+        
+        #if self.sweep_noise == True:
+        #    noise = RelaxationNoise(t1 = self.noise, t2 = self.noise)
+        #    self.environment.add_noise(noise = noise)
 
-        #print("In simulator environment:", self.initial_state)
         result = self.environment.run_state(init_state = self.initial_state)
         
         dm_sim = result.states[-1]

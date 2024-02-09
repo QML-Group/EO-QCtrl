@@ -23,10 +23,11 @@ from tf_agents.utils import common
 from tqdm.auto import trange
 from qutip import rand_ket
 from tf_agents.policies import PolicySaver
+from qutip.qip.noise import RelaxationNoise
 
 class QuantumRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, w_f, w_e, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, initial_state = basis(4,2)):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, w_f, w_e, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, sweep_noise = False, initial_state = basis(4,2)):
         
         """
         QuantumRLAgent Class
@@ -65,6 +66,7 @@ class QuantumRLAgent:
         self.env_eval_py.w_f = w_f
         self.env_train_py.w_e = w_e
         self.env_eval_py.w_e = w_e
+        self.sweep_noise = sweep_noise
 
         self.create_network_agent(policy = policy)
 
@@ -155,6 +157,7 @@ class QuantumRLAgent:
             Clears buffer each episode if set to True
         """
 
+        self.noise = np.linspace(start = 50, stop = 1, num = self.num_iterations) * self.env_eval_py.pulse_duration
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []
@@ -173,6 +176,14 @@ class QuantumRLAgent:
 
                 self.env_train_py.initial_state = new_initial_state
                 self.env_eval_py.initial_state = new_initial_state
+
+                if (i % 100 == 0):
+
+                    if self.sweep_noise == True:
+
+                        noise = RelaxationNoise(t1 = self.noise[i], t2 = self.noise[i])
+                        self.env_train_py.environment.add_noise(noise = noise)
+                        self.env_eval_py.environment.add_noise(noise = noise)
         
                 t.set_description(f"Episode {i}")
 
