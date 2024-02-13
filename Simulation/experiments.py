@@ -45,11 +45,11 @@ def grape_simulation():
 
 # Plot RL Agent Pulses Fidelity & Energy as function of Noise WITHOUT GRAPE Head Start
 def rl_simulation():
-    TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, target_unitary_cnot, 1, 0, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
-    EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, target_unitary_cnot, 1, 0, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
+    TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_random, 1, 0, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
+    EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_random, 1, 0, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
     
-    TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c, h_l, target_unitary_cnot, w_f = 1, w_e = 0, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
-    EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c, h_l, target_unitary_cnot, w_f = 1, w_e = 0, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+    TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, target_unitary_random, w_f = 1, w_e = 0, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+    EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_3, h_l_3, target_unitary_random, w_f = 1, w_e = 0, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
     
     ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (100, 100, 100), replay_buffer_capacity = 100)
     ApproximationAgent.run_training()
