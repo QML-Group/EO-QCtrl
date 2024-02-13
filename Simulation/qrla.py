@@ -182,6 +182,8 @@ class QuantumRLAgent:
                     if self.sweep_noise == True:
 
                         noise = RelaxationNoise(t1 = self.noise[i], t2 = self.noise[i])
+                        self.env_train_py.noise = [self.noise[i], self.noise[i]]
+                        self.env_eval_py.noise = [self.noise[i], self.noise[i]]
                         self.env_train_py.environment.add_noise(noise = noise)
                         self.env_eval_py.environment.add_noise(noise = noise)
         

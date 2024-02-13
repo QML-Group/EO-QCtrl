@@ -79,6 +79,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.reward_list = []
         self.energy_list = []
         self.sweep_noise = sweep_noise
+        self.noise = None
 
         self.create_environment()
 
@@ -97,6 +98,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         self.environment = Processor(N = self.n_q)
 
         if self.sweep_noise == False:
+            self.noise = [self.t_1, self.t_2]
             noise = RelaxationNoise(t1 = self.t_1, t2 = self.t_2)
             self.environment.add_noise(noise = noise)
 
@@ -240,11 +242,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         for i in range(len(pulses[:, 0])):
             self.environment.pulses[i].coeff = pulses[i]
-        
-        #if self.sweep_noise == True:
-        #    noise = RelaxationNoise(t1 = self.noise, t2 = self.noise)
-        #    self.environment.add_noise(noise = noise)
-
+          
         result = self.environment.run_state(init_state = self.initial_state)
         
         dm_sim = result.states[-1]
@@ -256,7 +254,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         dm_sim_np_im_flat = dm_sim_np_im.flatten()
         combined_dm_re_im_flat = np.ndarray.astype(np.hstack((dm_sim_np_re_flat, dm_sim_np_im_flat)), dtype = np.float32)
         self.dm_target = (Qobj(self.u_target) * self.initial_state) * (Qobj(self.u_target) * self.initial_state).dag()
-        #print("During fidelity calculation:", self.dm_target)
+        
         r_f = fidelity(dm_sim, self.dm_target)
 
         if plot_result == True:
