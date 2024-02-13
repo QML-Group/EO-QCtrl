@@ -54,7 +54,7 @@ def rl_simulation():
     ApproximationAgent.run_training()
     ApproximationAgent.save_weights('Test_Policy_Approx')
 
-    RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_iterations_RL, w_f = 1, w_e = 0, fc_layer_params = (200, 100, 50, 30, 10), replay_buffer_capacity = 10, policy = None, rand_initial_state = True, sweep_noise = True)
+    RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_iterations_RL, w_f = 1, w_e = 0, fc_layer_params = (200, 100, 50, 30, 10), replay_buffer_capacity = 10, policy = 'Test_Policy_Approx', rand_initial_state = True, sweep_noise = True)
 
     RLAgent.run_training()
     RLAgent.save_weights('Test_Policy_RL_Sweep_Noise')
