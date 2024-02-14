@@ -8,38 +8,55 @@ from qrla import QuantumRLAgent
 from qrla import GRAPEQRLAgent
 from input import *
 import matplotlib.pyplot as plt
+from qutip import rand_ket
 
 # Define Noise Sweep
-noise = np.linspace(start = 50, stop = 1, num = num_iterations_RL) * gate_duration
+noise = np.linspace(start = 100, stop = 0.01, num = 10000) * gate_duration
+
+def moving_average(a, n = 10):
+
+        ret = np.cumsum(a)
+        ret[n:] = ret[n:] - ret[:-n]
+
+        return ret[n - 1:] / n
 
 # Plot Standard GRAPE Pulses Fidelity & Energy as function of Noise
 def grape_simulation():
-    GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, t1, t2, target_unitary_cnot, 0.5, 0.5, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+    GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_cnot, 0.7, 0.3, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
     GRAPEEnvironment.initial_state = basis(4, 2)
 
-    pulses = GRAPEEnvironment.run_grape_optimization(0.5, 0.5, epsilon_f, epsilon_e)
+    pulses = GRAPEEnvironment.run_grape_optimization(0.7, 0.3, epsilon_f, epsilon_e)
 
     fidelity_list = []
     energy_list = []
-    reward_list = []
 
     for index, value in enumerate(noise):
         print(index)
-        GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c, h_l, value, value, target_unitary_cnot, 0.5, 0.5, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-        GRAPEEnvironment.initial_state = basis(4, 2)
+        if (index % 100 == 0):
+            GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, value, value, target_unitary_cnot, 0.7, 0.3, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+        new_state = rand_ket(4)
+        GRAPEEnvironment.initial_state = new_state
         _, fid = GRAPEEnvironment.calculate_fidelity_reward(pulses)
         energy = GRAPEEnvironment.calculate_energetic_cost(pulses)
-        reward = 0.5 * fid + 0.5 * (1 - energy)
         fidelity_list.append(fid)
         energy_list.append(energy)
-        reward_list.append(reward)
+        ma_fid_list = moving_average(fidelity_list)
+        ma_energy_list = moving_average(energy_list)
 
-    plt.plot(np.flip(noise), fidelity_list, label = "Fidelity")
-    plt.plot(np.flip(noise), energy_list, label = "Energy")
-    plt.plot(np.flip(noise), reward_list, label = "Reward")
+    ma_iteration_space = np.arange(len(ma_fid_list))
+
+    np.save('GRAPE_Fidelity_Noise_RAW', fidelity_list)
+    np.save('GRAPE_Energy_List_RAW', energy_list)
+    np.save('GRAPE_Fidelity_Noise_MA', ma_fid_list)
+    np.save('GRAPE_Energy_List_MA', ma_energy_list)
+    plt.plot(ma_iteration_space, fidelity_list[:len(ma_fid_list)], label = "Fidelity raw", color = '#FFCCCB')
+    plt.plot(ma_iteration_space, energy_list[:len(ma_fid_list)], label = "Energy raw", color = '#ECFFDC')
+    plt.plot(ma_iteration_space, ma_fid_list, label = "Fidelity MA", color = '#F70D1A')
+    plt.plot(ma_iteration_space, ma_energy_list, label = "Energy MA", color = '#7CFC00')
+    plt.xticks([0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000], ['100 T', '90 T', '80 T', '70 T', '60 T', '50 T', '40 T', '30 T', '20 T', '10 T', '0T'])
     plt.xlabel("Noise Gain")
     plt.legend()
-    plt.title("GRAPE Pulse Fidelity, Energy & Reward as function of Processor Decoherence time")
+    plt.title("GRAPE Fidelity, Energy vs. Decoherence Time")
     plt.tight_layout()
     plt.show()
 
@@ -60,4 +77,4 @@ def rl_simulation():
     RLAgent.save_weights('Test_Policy_RL_Sweep_Noise')
     RLAgent.plot_fidelity_energy_reward_per_iteration()
 
-rl_simulation()
+grape_simulation()

@@ -157,7 +157,7 @@ class QuantumRLAgent:
             Clears buffer each episode if set to True
         """
 
-        self.noise = np.linspace(start = 50, stop = 1, num = self.num_iterations) * self.env_eval_py.pulse_duration
+        self.noise = np.linspace(start = 100, stop = 0.1, num = self.num_iterations) * self.env_eval_py.pulse_duration
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []

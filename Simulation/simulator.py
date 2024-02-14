@@ -241,7 +241,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         for i in range(len(pulses[:, 0])):
             self.environment.pulses[i].coeff = pulses[i]
-          
+        
         result = self.environment.run_state(init_state = self.initial_state)
         
         dm_sim = result.states[-1]
