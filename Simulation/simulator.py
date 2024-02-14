@@ -97,12 +97,12 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         self.environment = Processor(N = self.n_q)
 
+        self.environment.add_drift(self.h_drift, targets = targets)
+
         if self.sweep_noise == False:
             self.noise = [self.t_1, self.t_2]
             noise = RelaxationNoise(t1 = self.t_1, t2 = self.t_2)
             self.environment.add_noise(noise = noise)
-
-        self.environment.add_drift(self.h_drift, targets = targets)
 
         for operator in self.h_control:
             self.environment.add_control(operator, targets = targets)
@@ -169,6 +169,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         if self.current_step < self.n_steps:
             
             next_state, fidelity = self.calculate_fidelity_reward(action_2d)
+            
             energy = self.calculate_energetic_cost(action_2d)
             self.fidelity_list.append(fidelity)
             self.energy_list.append(energy)
@@ -182,6 +183,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
                 terminal = True
 
         else:
+            
             terminal = True
             reward = 0
             next_state = 0
@@ -241,9 +243,9 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         for i in range(len(pulses[:, 0])):
             self.environment.pulses[i].coeff = pulses[i]
-        
+
         result = self.environment.run_state(init_state = self.initial_state)
-        
+    
         dm_sim = result.states[-1]
 
         dm_sim_np = fc.convert_qutip_to_numpy(dm_sim)

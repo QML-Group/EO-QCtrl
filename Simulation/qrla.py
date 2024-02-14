@@ -243,19 +243,21 @@ class QuantumRLAgent:
 
         self.iteration_space = np.linspace(1, self.num_cycles * self.num_iterations, self.num_cycles * self.num_iterations)
         fig, ax1 = plt.subplots()
-
         ma_fid = self.moving_average(self.env_eval_py.fidelity_list)
         ma_energy = self.moving_average(self.env_eval_py.energy_list)
-        ma_reward = self.moving_average(self.env_eval_py.reward_list)
         ma_iteration_space = np.arange(len(ma_fid))
-
-        ax1.axhline(y = 0, color = "grey")
+        np.save('RL_Fidelity_Noise_RAW', self.env_eval_py.fidelity_list)
+        np.save('RL_Energy_Noise_RAW', self.env_eval_py.energy_list)
+        np.save('RL_Fidelity_List_MA', ma_fid)
+        np.save('RL_Energy_List_MA', ma_energy)
+        ax2 = ax1.twiny()
+        ax2.axhline(y = 0, color = "grey")
+        ax2.set_xticks([0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000], ['100 T', '90 T', '80 T', '70 T', '60 T', '50 T', '40 T', '30 T', '20 T', '10 T', '0T'])
+        ax2.set_xlabel("Decoherence Time (T1, T2)")
         ax1.plot(ma_iteration_space, self.env_eval_py.fidelity_list[:len(ma_fid)], color = '#FFCCCB')
         ax1.plot(ma_iteration_space, self.env_eval_py.energy_list[:len(ma_fid)], color = '#ECFFDC')
-        ax1.plot(ma_iteration_space, self.env_eval_py.reward_list[:len(ma_fid)], color = '#D6FFFF')
         ax1.plot(ma_iteration_space, ma_fid, label = "Fidelity", color = '#F70D1A')
         ax1.plot(ma_iteration_space, ma_energy, label = "Energy", color = '#7CFC00')
-        ax1.plot(ma_iteration_space, ma_reward, label = "Reward", color = '#1F51FF')
         ax1.set_ylim(0.0, 1.0)
         ax1.set_xlabel("Episode number")
         ax1.legend(loc = 'upper right')
@@ -338,7 +340,7 @@ class QuantumRLAgent:
         my_weights = PolicySaver(self.collect_policy)
         my_weights.save(directory)
 
-    def moving_average(self, a, n = 1000):
+    def moving_average(self, a, n = 100):
 
         ret = np.cumsum(a)
         ret[n:] = ret[n:] - ret[:-n]
