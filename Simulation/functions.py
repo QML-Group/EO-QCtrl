@@ -80,6 +80,14 @@ def Generate_Rand_Unitary(N):
 
     return nparray
 
+def hadamard():
+    """
+    Returns Hadamard Gate
+    """
+
+    return (1/np.sqrt(2)) * np.array([[1, 1],
+                                      [1, -1]])
+
 def overlap(A, B):
     return np.trace(A.conj().T @ B) / A.shape[0]
 
