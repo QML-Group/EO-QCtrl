@@ -161,6 +161,7 @@ class QuantumRLAgent:
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []
+        
 
         with trange(self.num_iterations, dynamic_ncols = False) as t:
 
@@ -168,7 +169,7 @@ class QuantumRLAgent:
 
                 if self.rand_initial_state == True:
 
-                    new_initial_state = rand_ket(4)
+                    new_initial_state = rand_ket(2**self.env_train_py.n_q)
 
                 else:
 

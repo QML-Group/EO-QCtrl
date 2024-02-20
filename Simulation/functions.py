@@ -88,6 +88,15 @@ def hadamard():
     return (1/np.sqrt(2)) * np.array([[1, 1],
                                       [1, -1]])
 
+def t_gate():
+
+    """
+    Returns T-Gate
+    """
+
+    return np.array([[1, 0],
+                     [0, np.exp(-1j * (np.pi/4))]])
+
 def overlap(A, B):
     return np.trace(A.conj().T @ B) / A.shape[0]
 

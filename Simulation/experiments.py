@@ -22,8 +22,8 @@ def moving_average(a, n = 100):
 
 # Plot Standard GRAPE Pulses Fidelity & Energy as function of Noise
 def grape_simulation():
-    GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, t1, t2, target_unitary_hadamard, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-    GRAPEEnvironment.initial_state = rand_ket(4)
+    GRAPEEnvironment = QuantumEnvironment(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, t1, t2, target_unitary_t_gate_1_qubit, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+    GRAPEEnvironment.initial_state = rand_ket(2)
 
     pulses = GRAPEEnvironment.run_grape_optimization(0.8, 0.2, epsilon_f, epsilon_e)
     GRAPEEnvironment.plot_grape_pulses(pulses)
@@ -33,8 +33,8 @@ def grape_simulation():
     for index, value in enumerate(noise):
         print(index)
         if (index % 100 == 0):
-            GRAPEEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_3, h_l_3, value, value, target_unitary_hadamard, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
-        new_state = rand_ket(4)
+            GRAPEEnvironment = QuantumEnvironment(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, value, value, target_unitary_t_gate_1_qubit, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles)
+        new_state = rand_ket(2)
         GRAPEEnvironment.initial_state = new_state
         _, fid = GRAPEEnvironment.calculate_fidelity_reward(pulses)
         energy = GRAPEEnvironment.calculate_energetic_cost(pulses)
@@ -62,17 +62,17 @@ def grape_simulation():
 
 # Plot RL Agent Pulses Fidelity & Energy as function of Noise WITHOUT GRAPE Head Start
 def rl_simulation():
-    TrainingEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_hadamard, h_l_hadamard, t1, t2, target_unitary_hadamard, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
-    EvaluationEnvironment = QuantumEnvironment(number_qubits, h_d, h_c_hadamard, h_l_hadamard, t1, t2, target_unitary_hadamard, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
-    
-    TrainingEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_hadamard, h_l_hadamard, target_unitary_hadamard, w_f = 0.8, w_e = 0.2, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
-    EvaluationEnvironmentGRAPE = GRAPEApproximation(number_qubits, h_d, h_c_hadamard, h_l_hadamard, target_unitary_hadamard, w_f = 0.8, w_e = 0.2, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
-    
-    ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (100, 100, 100), replay_buffer_capacity = 100)
-    ApproximationAgent.run_training()
-    ApproximationAgent.save_weights('Test_Policy_Approx')
+    TrainingEnvironment = QuantumEnvironment(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, t1, t2, target_unitary_hadamard_1_qubit, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
+    EvaluationEnvironment = QuantumEnvironment(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, t1, t2, target_unitary_hadamard_1_qubit, 0.8, 0.2, number_of_timesteps, gate_duration, number_of_grape_iterations, n_cycles, sweep_noise = True)
 
-    RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_iterations_RL, w_f = 0.8, w_e = 0.2, fc_layer_params = (200, 100, 50, 30, 10), replay_buffer_capacity = 10, policy = 'Test_Policy_Approx', rand_initial_state = True, sweep_noise = True)
+    #TrainingEnvironmentGRAPE = GRAPEApproximation(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, target_unitary_hadamard_1_qubit, w_f = 0.8, w_e = 0.2, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+    #EvaluationEnvironmentGRAPE = GRAPEApproximation(1, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit, target_unitary_hadamard_1_qubit, w_f = 0.8, w_e = 0.2, timesteps = number_of_timesteps, grape_iterations = number_of_grape_iterations)
+    
+    #ApproximationAgent = GRAPEQRLAgent(TrainingEnvironmentGRAPE, EvaluationEnvironmentGRAPE, num_iterations_Approx, fc_layer_params = (100, 100, 100), replay_buffer_capacity = 100)
+    #ApproximationAgent.run_training()
+    #ApproximationAgent.save_weights('Test_Policy_Approx')
+
+    RLAgent = QuantumRLAgent(TrainingEnvironment, EvaluationEnvironment, num_iterations_RL, w_f = 0.8, w_e = 0.2, fc_layer_params = (200, 100, 50, 30, 10), replay_buffer_capacity = 10, policy = None, rand_initial_state = True, sweep_noise = True)
     RLAgent.run_training()
     RLAgent.save_weights('Test_Policy_RL_Sweep_Noise')
     RLAgent.plot_fidelity_energy_reward_per_iteration()
