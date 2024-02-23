@@ -285,7 +285,7 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         h_t_norm = []
         stepsize = self.pulse_duration/self.timesteps
-        self.max_u_val = 10
+        self.max_u_val = 2
 
         for i in range(self.timesteps - 1):
             h_t = 0

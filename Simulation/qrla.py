@@ -27,7 +27,7 @@ from qutip.qip.noise import RelaxationNoise
 
 class QuantumRLAgent:
 
-    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, w_f, w_e, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, sweep_noise = False, initial_state = basis(4,2)):
+    def __init__(self, TrainEnvironment, EvaluationEnvironment, num_iterations, w_f, w_e, num_cycles = 1, fc_layer_params = (100, 100, 100), learning_rate = 1e-3, collect_episodes_per_iteration = 1, eval_interval = 1, replay_buffer_capacity = 10, policy = None, rand_initial_state = True, sweep_noise = False, noise_level = "Low", initial_state = basis(4,2)):
         
         """
         QuantumRLAgent Class
@@ -67,6 +67,7 @@ class QuantumRLAgent:
         self.env_train_py.w_e = w_e
         self.env_eval_py.w_e = w_e
         self.sweep_noise = sweep_noise
+        self.noise_level = noise_level
 
         self.create_network_agent(policy = policy)
 
@@ -156,8 +157,18 @@ class QuantumRLAgent:
         clear_buffer : bool : False
             Clears buffer each episode if set to True
         """
+        
+        noise_low = np.linspace(start = 200, stop = 10, num = self.num_iterations) * self.env_eval_py.pulse_duration
+        noise_high = np.linspace(start = 10, stop = 0.01, num = self.num_iterations) * self.env_eval_py.pulse_duration
+        
+        if self.noise_level == "Low":
 
-        self.noise = np.linspace(start = 100, stop = 0.1, num = self.num_iterations) * self.env_eval_py.pulse_duration
+            self.noise = noise_low
+        
+        elif self.noise_level == "High":
+
+            self.noise = noise_high
+        
         self.return_list = []
         self.episode_list = []
         self.iteration_list = []
