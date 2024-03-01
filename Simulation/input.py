@@ -4,10 +4,11 @@ from qutip import basis, fidelity, identity, sigmax, sigmaz, sigmay, tensor, des
 
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
 h_d_1_qubit = np.pi * sigmaz()
+h_d_identity = identity(2)
 h_c = [tensor(identity(2), sigmax())]
 h_c_hadamard = [tensor(sigmax(), identity(2))]
 h_c_1_qubit = [sigmax()]
-h_l_1_qubit = [r'$u_{x}$']
+h_l_1_qubit = [r'$u_{x}$', r'$u_{y}$', r'$u_{z}$']
 h_l_hadamard = [r'$u_{1x}$'] 
 h_c_3 = [tensor(sigmax(), identity(2)), tensor(identity(2), sigmax()), tensor(sigmax(), sigmax())]
 h_l = [r'$u_{2x}$'] 
@@ -18,7 +19,7 @@ target_unitary_hadamard = fc.tensor(fc.hadamard(), fc.identity(2))
 target_unitary_t_gate = fc.tensor(fc.t_gate(), fc.identity(2))
 target_unitary_hadamard_1_qubit = fc.hadamard()
 target_unitary_t_gate_1_qubit = fc.t_gate()
-number_qubits = 2
+number_qubits = 1
 gate_duration = 2 * np.pi
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
