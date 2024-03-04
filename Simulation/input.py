@@ -3,12 +3,12 @@ import functions as fc
 from qutip import basis, fidelity, identity, sigmax, sigmaz, sigmay, tensor, destroy, rand_ket
 
 h_d = np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Define Drift Hamiltonian used in "Processor"
-h_d_1_qubit = np.pi * sigmaz()
+h_d_1_qubit = 1 * sigmaz()
 h_d_identity = identity(2)
 h_c = [tensor(identity(2), sigmax())]
 h_c_hadamard = [tensor(sigmax(), identity(2))]
-h_c_1_qubit = [sigmax()]
-h_l_1_qubit = [r'$u_{x}$', r'$u_{y}$', r'$u_{z}$']
+h_c_1_qubit = [sigmax(), sigmaz()]
+h_l_1_qubit = [r'$u_{x}$', r'$u_{z}$']
 h_l_hadamard = [r'$u_{1x}$'] 
 h_c_3 = [tensor(sigmax(), identity(2)), tensor(identity(2), sigmax()), tensor(sigmax(), sigmax())]
 h_l = [r'$u_{2x}$'] 

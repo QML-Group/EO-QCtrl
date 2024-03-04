@@ -17,6 +17,7 @@ from tf_agents.trajectories import time_step as ts
 from tqdm.auto import trange
 import tensorflow as tf
 from qutip import rand_ket
+from qutip import Bloch
 
 class QuantumEnvironment(py_environment.PyEnvironment):
    
@@ -244,9 +245,9 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         for i in range(len(pulses[:, 0])):
             self.environment.pulses[i].coeff = pulses[i]
 
-        result = self.environment.run_state(init_state = self.initial_state)
+        self.result = self.environment.run_state(init_state = self.initial_state)
     
-        dm_sim = result.states[-1]
+        dm_sim = self.result.states[-1]
 
         dm_sim_np = fc.convert_qutip_to_numpy(dm_sim)
         dm_sim_np_re = dm_sim_np.real
@@ -635,6 +636,56 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         plt.title("Cost Function, Infidelity, and Energetic Cost vs. GRAPE Iteration Number")
         plt.legend()
         plt.grid()
+        plt.show()
+    
+    def convert_dm_to_coordinates(dm):
+
+        a = dm[0, 0]
+        b = dm[1, 0]
+
+        x = 2 * b.real
+        y = 2 * b.imag
+        z = 2 * a - 1
+
+        return x, y, z
+
+    def plot_bloch_sphere_trajectory(self):
+
+        density_matrix_list = fc.convert_qutip_list_to_numpy(self.result.states)
+        #print(density_matrix_list[0])
+
+        x_coordinate_list = []
+        y_coordinate_list = []
+        z_coordinate_list = []
+
+        for i in range(len(density_matrix_list)):
+            dm = density_matrix_list[i]
+            a = dm[0, 0]
+            b = dm[1, 0]
+            x = 2 * b.real
+            y = 2 * b.imag
+            z = 2 * a - 1
+            x_coordinate_list.append(x)
+            y_coordinate_list.append(y)
+            z_coordinate_list.append(z)
+            
+        points = [x_coordinate_list, y_coordinate_list, z_coordinate_list]
+
+        target_state = (Qobj(self.u_target) * self.initial_state)
+    
+        bsphere = Bloch()
+
+        bsphere.make_sphere()
+
+        bsphere.add_states(self.initial_state)
+
+        bsphere.add_states(target_state)
+
+        bsphere.add_points(points)
+
+        bsphere.render()
+
+        #bsphere.show()
         plt.show()
 
 class GRAPEApproximation(py_environment.PyEnvironment):

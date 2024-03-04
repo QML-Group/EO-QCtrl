@@ -97,6 +97,20 @@ def t_gate():
     return np.array([[1, 0],
                      [0, np.exp(-1j * (np.pi/4))]])
 
+def rx_gate(theta):
+
+    """
+    Returns X-Rotation gate
+    """
+
+    return np.array([[np.cos(theta/2), -1j * np.sin(theta/2)],
+                     [-1j * np.sin(theta/2), np.cos(theta/2)]])
+
+def rz_gate(theta):
+
+    return np.array([[np.exp(-1j * theta/2), 0],
+                     [0, np.exp(1j * theta/2)]])
+
 def overlap(A, B):
     return np.trace(A.conj().T @ B) / A.shape[0]
 

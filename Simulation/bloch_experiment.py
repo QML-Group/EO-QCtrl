@@ -11,33 +11,30 @@ import matplotlib.pyplot as plt
 from qutip import rand_ket
 
 # Define input parameters
-drift_hamiltonian = h_d_identity
+drift_hamiltonian = h_d_1_qubit
 n_q = number_qubits
 control_hamiltonian = h_c_1_qubit
 hamiltonian_label = h_l_1_qubit
-u_target = fc.sigmax()
-initial_state = basis(2,0)
-gate_duration = 2*np.pi
-number_of_timesteps = 2
-pulse_amplitude = -1/(2*np.pi)
-pulse_list = pulse_amplitude * np.ones(shape = (number_of_timesteps))
-print(pulse_list.shape)
-
-t1 = 1e3 * gate_duration
-t2 = 1e3 * gate_duration
+u_target = fc.rz_gate(np.pi)
+initial_state = (1/np.sqrt(2)) * (basis(2,0) + basis(2, 1))
+gate_duration = np.pi/3
+number_of_timesteps = 500
+t1 = 1e5 * gate_duration
+t2 = 1e5 * gate_duration
+custom_pulse = np.zeros((1, number_of_timesteps))
 
 # Create Quantum Environment
 
-environment = QuantumEnvironment(n_q, drift_hamiltonian, control_hamiltonian, hamiltonian_label, t1, t2, u_target, w_f = 1, w_e = 0, timesteps = number_of_timesteps, pulse_duration = gate_duration, grape_iterations = 100, n_steps = 1, sweep_noise = True)
+environment = QuantumEnvironment(n_q, drift_hamiltonian, control_hamiltonian, hamiltonian_label, t1, t2, u_target, w_f = 1, w_e = 0, timesteps = number_of_timesteps, pulse_duration = gate_duration, grape_iterations = 500, n_steps = 1, sweep_noise = False)
 
-#grape_pulse = environment.run_grape_optimization(w_f = 1, w_e = 0, eps_f = 1, eps_e = 100)
+environment.initial_state = initial_state
 
-environment.environment.pulses[0].coeff = pulse_list
+grape_pulses = environment.run_grape_optimization(w_f = 1, w_e = 0, eps_f = 1, eps_e = 100)
 
-#environment.plot_grape_pulses(pulse_list)
+_, f_grape= environment.calculate_fidelity_reward(grape_pulses, plot_result = False)
 
-result = environment.environment.run_state(init_state = initial_state)
+environment.plot_grape_pulses(grape_pulses)
 
-dm_sim = result.states[-1]
+print(f_grape)
 
-print(dm_sim)
+environment.plot_bloch_sphere_trajectory()
