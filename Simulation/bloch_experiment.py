@@ -11,16 +11,16 @@ import matplotlib.pyplot as plt
 from qutip import rand_ket
 
 # Define input parameters
-drift_hamiltonian = h_d_identity
+drift_hamiltonian = h_d_1_qubit
 n_q = number_qubits
 control_hamiltonian = h_c_1_qubit
 hamiltonian_label = h_l_1_qubit
-u_target = fc.rx_gate(np.pi/2)
+u_target = fc.identity(2)
 initial_state = basis(2,0)
 gate_duration = 2 * np.pi
-number_of_timesteps = 500
-t1 = 1e5 * gate_duration
-t2 = 1e5 * gate_duration
+number_of_timesteps = 100
+t1 = 100 * gate_duration
+t2 = 100 * gate_duration
 custom_pulse = np.zeros((1, number_of_timesteps))
 
 # Create Quantum Environment
