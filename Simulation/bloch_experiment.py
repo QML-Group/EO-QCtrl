@@ -19,8 +19,8 @@ u_target = fc.rx_gate(np.pi/2)
 initial_state = basis(2,0)
 gate_duration = 2 * np.pi
 number_of_timesteps = 500
-t1 = 100 * gate_duration
-t2 = 100 * gate_duration
+t1 = 1000 * gate_duration
+t2 = 1000 * gate_duration
 
 # Simple Bloch Sphere Plot 
 def bloch_sphere_grape():
@@ -28,11 +28,16 @@ def bloch_sphere_grape():
     environment.initial_state = initial_state
     grape_pulses = environment.run_grape_optimization(w_f = 1, w_e = 0, eps_f = 1, eps_e = 100)
     _, f_grape= environment.calculate_fidelity_reward(grape_pulses, plot_result = False)
+
     environment.plot_grape_pulses(grape_pulses)
-    print(f_grape)
+
+    print("Fidelity is:", f_grape)
+
     environment.plot_bloch_sphere_trajectory()
+
     total_arc_length = environment.get_total_arc_length()
-    print(total_arc_length)
+
+    print("Total Arc Length is:", total_arc_length)
 
 def bloch_sphere_rl():
 
@@ -48,9 +53,13 @@ def bloch_sphere_rl():
 
     _, f_rl = EvaluationEnvironment.calculate_fidelity_reward(BestPulse, plot_result = False)
 
-    print(f_rl)
+    print("Fidelity is", f_rl)
 
     EvaluationEnvironment.plot_bloch_sphere_trajectory()
+
+    arc_length = EvaluationEnvironment.get_total_arc_length()
+
+    print("Total Arc Length is:" , arc_length)
 
 
 bloch_sphere_grape()
