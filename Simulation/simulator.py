@@ -648,11 +648,49 @@ class QuantumEnvironment(py_environment.PyEnvironment):
         z = 2 * a - 1
 
         return x, y, z
+    
+    def calc_arc_length(n1, n2):
+
+        return np.arccos(np.dot(n1, n2))
+    
+    def get_total_arc_length(self):
+
+        density_matrix_list = fc.convert_qutip_list_to_numpy(self.result.states)
+
+        x_coordinate_list = []
+        y_coordinate_list = []
+        z_coordinate_list = []
+
+        for i in range(len(density_matrix_list)):
+            dm = density_matrix_list[i]
+            a = dm[0, 0]
+            b = dm[1, 0]
+            x = 2 * b.real
+            y = 2 * b.imag
+            z = 2 * a - 1
+            x_coordinate_list.append(x)
+            y_coordinate_list.append(y)
+            z_coordinate_list.append(z)
+
+        coordinate_matrix = np.vstack((x_coordinate_list, y_coordinate_list, z_coordinate_list)).real
+        
+        arc_length_list = []
+
+        for i in range(len(coordinate_matrix[0]) - 1):
+
+            argument = np.linalg.norm(np.cross(coordinate_matrix[:, i], coordinate_matrix[:, i + 1]))/(np.dot(coordinate_matrix[:, i], coordinate_matrix[:, i + 1]))
+            
+            arclen_tan = np.arctan(argument)
+
+            arc_length_list.append(arclen_tan)
+
+        total_arc_length = np.sum(arc_length_list)
+
+        return total_arc_length
 
     def plot_bloch_sphere_trajectory(self):
 
         density_matrix_list = fc.convert_qutip_list_to_numpy(self.result.states)
-        #print(density_matrix_list[0])
 
         x_coordinate_list = []
         y_coordinate_list = []
@@ -685,7 +723,6 @@ class QuantumEnvironment(py_environment.PyEnvironment):
 
         bsphere.render()
 
-        #bsphere.show()
         plt.show()
 
 class GRAPEApproximation(py_environment.PyEnvironment):

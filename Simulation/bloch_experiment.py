@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from qutip import rand_ket
 
 # Define input parameters
-drift_hamiltonian = h_d_identity
+drift_hamiltonian = h_d_1_qubit
 n_q = number_qubits
 control_hamiltonian = h_c_1_qubit
 hamiltonian_label = h_l_1_qubit
@@ -21,7 +21,6 @@ gate_duration = 2 * np.pi
 number_of_timesteps = 500
 t1 = 100 * gate_duration
 t2 = 100 * gate_duration
-custom_pulse = np.zeros((1, number_of_timesteps))
 
 # Simple Bloch Sphere Plot 
 def bloch_sphere_grape():
@@ -32,6 +31,8 @@ def bloch_sphere_grape():
     environment.plot_grape_pulses(grape_pulses)
     print(f_grape)
     environment.plot_bloch_sphere_trajectory()
+    total_arc_length = environment.get_total_arc_length()
+    print(total_arc_length)
 
 def bloch_sphere_rl():
 
