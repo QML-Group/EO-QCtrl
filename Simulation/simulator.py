@@ -120,8 +120,8 @@ class QuantumEnvironment(py_environment.PyEnvironment):
             shape = (len(self.h_control) * self.timesteps,),
             dtype = np.float32,
             name = "pulses",
-            minimum = -2,
-            maximum = 2,
+            minimum = -1,
+            maximum = 1,
         )
 
     def observation_spec(self):
