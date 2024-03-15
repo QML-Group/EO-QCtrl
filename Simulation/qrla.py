@@ -543,6 +543,19 @@ class GRAPEQRLAgent:
         self.pulse_2d = np.reshape(self.final_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
         
         return self.pulse_2d
+    
+    def get_best_pulse(self):
+
+        """
+        Returns best action of agent
+        """
+
+        self.max_index = self.env_eval_py.reward_list.index(max(self.env_eval_py.reward_list))
+        self.max_val = self.episode_list[self.max_index]
+        self.max_pulse = self.max_val.action.numpy()[0, 0, :]
+        self.max_pulse_2d = np.reshape(self.max_pulse, (len(self.env_train_py.h_control), self.env_train_py.timesteps))
+
+        return self.max_pulse_2d
 
     def plot_best_pulse(self):
 
