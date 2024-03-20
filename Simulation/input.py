@@ -34,6 +34,6 @@ weight_energy = 0
 epsilon_f = 1
 epsilon_e = 100
 n_cycles = 1
-num_iterations_RL = 10
+num_iterations_RL = 1000
 num_iterations_Approx = 2000
 
