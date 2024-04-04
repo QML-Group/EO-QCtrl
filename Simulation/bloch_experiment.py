@@ -23,7 +23,7 @@ gate_duration = 2 * np.pi
 number_of_timesteps = 200
 t1 = 1000 * gate_duration
 t2 = 1000 * gate_duration
-num_experiments = 3
+num_experiments = 10
 weights = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
 # Simple Bloch Sphere Plot 
