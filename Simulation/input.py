@@ -8,9 +8,7 @@ h_d_identity = identity(2)
 h_c = [tensor(identity(2), sigmax())]
 h_c_hadamard = [tensor(sigmax(), identity(2))]
 h_c_1_qubit = [sigmax(), sigmay()]
-#h_c_1_qubit = [sigmax()]
 h_l_1_qubit = [r'$u_{x}$', r'$u_{y}$']
-#h_l_1_qubit = [r'$u_{x}$']
 h_l_hadamard = [r'$u_{1x}$'] 
 h_c_3 = [tensor(sigmax(), identity(2)), tensor(identity(2), sigmax()), tensor(sigmax(), sigmax())]
 h_l = [r'$u_{2x}$'] 
@@ -36,4 +34,3 @@ epsilon_e = 100
 n_cycles = 1
 num_iterations_RL = 1000
 num_iterations_Approx = 2000
-

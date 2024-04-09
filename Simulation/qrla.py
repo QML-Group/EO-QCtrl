@@ -244,7 +244,7 @@ class QuantumRLAgent:
         ax1.legend(loc = (0.7, 0.45))
         ax2.legend(loc = (0.7, 0.55))
         fig.tight_layout()
-        #ax1.grid()
+        
         plt.show()
 
     def plot_fidelity_energy_reward_per_iteration(self):
