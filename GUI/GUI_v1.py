@@ -25,27 +25,27 @@ class EUQOC_App(ctk.CTk):
         self.inputparams_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
 
         self.u_t_optionmenu = ctk.CTkOptionMenu(self.inputparams_frame, dynamic_resizing=False,
-                                                values=["CNOT", "Hadamard", "T"])
+                                                values=["CNOT", "Hadamard", "T"], fg_color="white", text_color="green")
         self.u_t_optionmenu.grid(row = 1, column = 0, padx = 20, pady = (20, 10))
         self.u_t_optionmenu.set("Target Unitary")
 
         self.h_d_optionmenu = ctk.CTkOptionMenu(self.inputparams_frame, dynamic_resizing=False,
-                                                values=["HD1", "HD2"])
+                                                values=["HD1", "HD2"], fg_color="white", text_color="green")
         self.h_d_optionmenu.grid(row = 1, column = 1, padx = 20, pady = (20, 10))
         self.h_d_optionmenu.set("Drift Hamiltonian")
 
         self.h_c_optionmenu = ctk.CTkOptionMenu(self.inputparams_frame, dynamic_resizing=False,
-                                                values=["HC1", "HC2", "HC3", "HC4"])
+                                                values=["HC1", "HC2", "HC3", "HC4"], fg_color="white", text_color="green")
         self.h_c_optionmenu.grid(row = 2, column = 0, padx = 20, pady = (20, 10))
         self.h_c_optionmenu.set("Control Hamiltonian")
 
-        self.t_1_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "Decoherence Time")
+        self.t_1_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "Decoherence Time", fg_color="white", text_color="green")
         self.t_1_optionmenu.grid(row = 2, column = 1, padx = 20, pady = (20, 10))
 
-        self.N_g_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "GRAPE Iterations")
+        self.N_g_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "GRAPE Iterations", fg_color="white", text_color="green")
         self.N_g_optionmenu.grid(row = 1, column = 2, padx = 20, pady = (20, 10))
 
-        self.N_t_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "Training Episodes")
+        self.N_t_optionmenu = ctk.CTkEntry(self.inputparams_frame, placeholder_text = "Training Episodes", fg_color="white", text_color="green")
         self.N_t_optionmenu.grid(row = 2, column = 2, padx = 20, pady = (20, 10))
 
 
