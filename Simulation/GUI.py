@@ -6,7 +6,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import numpy as np
-
+import simulator as sim
+import qrla as qrla
 
 class EUQOC_App(ctk.CTk):
 
@@ -74,7 +75,7 @@ class EUQOC_App(ctk.CTk):
 
         self.weightselect_frame = ctk.CTkFrame(self)
         self.weightselect_frame.grid(row = 2, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
-        self.weightselect_label = ctk.CTkLabel(self.weightselect_frame, text = "Weight Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
+        self.weightselect_label = ctk.CTkLabel(self.weightselect_frame, text = f"Weight Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
         self.weightselect_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
         self.w_e_label = ctk.CTkLabel(self.weightselect_frame, text = "Weight EC", font = ctk.CTkFont(size = 14))
         self.w_e_label.grid(row = 1, column = 0, padx = 10, pady = (20, 10))
