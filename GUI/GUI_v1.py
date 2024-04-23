@@ -7,7 +7,6 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import numpy as np
 
-
 class EUQOC_App(ctk.CTk):
 
     ctk.set_appearance_mode("dark")  
@@ -62,13 +61,13 @@ class EUQOC_App(ctk.CTk):
         self.algoselect_label = ctk.CTkLabel(self.algoselect_frame, text = "Algorithm Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
         self.algoselect_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
 
-        self.eo_grape_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "EO-GRAPE")
+        self.eo_grape_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "EO-GRAPE", command = self.buttonfunction)
         self.eo_grape_switch.grid(row = 1, column = 0, padx = 20, pady = (20, 10))
 
-        self.rla1_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "RLA-1")
+        self.rla1_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "RLA-1", command = self.buttonfunction)
         self.rla1_switch.grid(row = 1, column = 1, padx = 20, pady = (20, 10))
 
-        self.rla2_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "RLA-2")
+        self.rla2_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "RLA-2", command = self.buttonfunction)
         self.rla2_switch.grid(row = 1, column = 2, padx = 20, pady = (20, 10))
 
         # Create Weight Selector
@@ -91,6 +90,7 @@ class EUQOC_App(ctk.CTk):
         self.runbutton_frame = ctk.CTkFrame(self)
         self.runbutton_frame.grid(row = 3, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
         self.runbutton = ctk.CTkButton(self.runbutton_frame, text="Run Experiment", width = 600)
+        
         self.runbutton.grid(column = 1)
 
         # Results frame
@@ -118,6 +118,25 @@ class EUQOC_App(ctk.CTk):
         canvas_2.draw()
         canvas_2.get_tk_widget().grid(row = 2, column = 0, padx = 10, pady = (20, 10))
 
+    def buttonfunction(self):
+
+        if self.eo_grape_switch.get() == 1:
+            algorithm = "EO-GRAPE"
+
+        elif self.rla1_switch.get() == 1:
+            algorithm = "RLA-1"
+
+        elif self.rla2_switch.get() == 1:
+            algorithm = "RLA-2"
+
+        else:
+            algorithm = "None"
+
+        print(algorithm)
+
+
 if __name__ == "__main__":
     app = EUQOC_App()
     app.mainloop()
+
+
