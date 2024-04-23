@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import numpy as np
 
+
 class EUQOC_App(ctk.CTk):
 
     ctk.set_appearance_mode("dark")  
@@ -55,7 +56,6 @@ class EUQOC_App(ctk.CTk):
 
 
         # Create Algorithm Selector 
-
         self.algoselect_frame = ctk.CTkFrame(self)
         self.algoselect_frame.grid(row = 1, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
         self.algoselect_label = ctk.CTkLabel(self.algoselect_frame, text = "Algorithm Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
@@ -138,5 +138,4 @@ class EUQOC_App(ctk.CTk):
 if __name__ == "__main__":
     app = EUQOC_App()
     app.mainloop()
-
 
