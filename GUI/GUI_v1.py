@@ -1,12 +1,17 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter as ctk
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+from matplotlib.figure import Figure
+import numpy as np
 
-
-ctk.set_appearance_mode("dark")  
-ctk.set_default_color_theme("green") 
 
 class EUQOC_App(ctk.CTk):
+
+    ctk.set_appearance_mode("dark")  
+    ctk.set_default_color_theme("green") 
 
     def __init__(self):
         super().__init__()
@@ -22,8 +27,8 @@ class EUQOC_App(ctk.CTk):
         # Create Input Parameter Section
         self.inputparams_frame = ctk.CTkFrame(self)
         self.inputparams_frame.grid(row = 0, column = 0, padx=(20, 0), pady=(20, 0), sticky = "nsew")
-        self.inputparams_label = ctk.CTkLabel(self.inputparams_frame, text = "Input Parameters", font = ctk.CTkFont(size = 20, weight = "bold"))
-        self.inputparams_label.grid(row = 0, column = 1, padx = 10, pady = (20, 10))
+        self.inputparams_label = ctk.CTkLabel(self.inputparams_frame, text = "Input Parameters", font = ctk.CTkFont(size = 24, weight = "bold"))
+        self.inputparams_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
 
         self.u_t_optionmenu = ctk.CTkOptionMenu(self.inputparams_frame, dynamic_resizing=False,
                                                 values=["CNOT", "Hadamard", "T"], fg_color="white", text_color="green")
@@ -54,8 +59,8 @@ class EUQOC_App(ctk.CTk):
 
         self.algoselect_frame = ctk.CTkFrame(self)
         self.algoselect_frame.grid(row = 1, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
-        self.algoselect_label = ctk.CTkLabel(self.algoselect_frame, text = "Algorithm Selector", font = ctk.CTkFont(size = 20, weight = "bold"))
-        self.algoselect_label.grid(row = 0, column = 1, padx = 10, pady = (20, 10))
+        self.algoselect_label = ctk.CTkLabel(self.algoselect_frame, text = "Algorithm Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
+        self.algoselect_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
 
         self.eo_grape_switch = ctk.CTkSwitch(master = self.algoselect_frame, text = "EO-GRAPE")
         self.eo_grape_switch.grid(row = 1, column = 0, padx = 20, pady = (20, 10))
@@ -70,8 +75,8 @@ class EUQOC_App(ctk.CTk):
 
         self.weightselect_frame = ctk.CTkFrame(self)
         self.weightselect_frame.grid(row = 2, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
-        self.weightselect_label = ctk.CTkLabel(self.weightselect_frame, text = "Weight Selector", font = ctk.CTkFont(size = 20, weight = "bold"))
-        self.weightselect_label.grid(row = 0, column = 1, padx = 10, pady = (20, 10))
+        self.weightselect_label = ctk.CTkLabel(self.weightselect_frame, text = "Weight Selector", font = ctk.CTkFont(size = 24, weight = "bold"))
+        self.weightselect_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
         self.w_e_label = ctk.CTkLabel(self.weightselect_frame, text = "Weight EC", font = ctk.CTkFont(size = 14))
         self.w_e_label.grid(row = 1, column = 0, padx = 10, pady = (20, 10))
         self.weightselect_slider_1 = ctk.CTkSlider(self.weightselect_frame, orientation = "horizontal", from_=0, to=1, number_of_steps=10, width = 300, progress_color="green", button_hover_color="darkgreen")
@@ -92,8 +97,26 @@ class EUQOC_App(ctk.CTk):
 
         self.results_frame = ctk.CTkFrame(self)
         self.results_frame.grid(row = 0, column = 1, padx = (20, 0), pady = (20, 0), sticky = "nsew", rowspan = 4)
-        self.results_label = ctk.CTkLabel(self.results_frame, text = "Simulation Results", font = ctk.CTkFont(size = 20, weight = "bold"))
+        self.results_label = ctk.CTkLabel(self.results_frame, text = "Simulation Results", font = ctk.CTkFont(size = 24, weight = "bold"))
         self.results_label.grid(row = 0, column = 0, padx = 10, pady = (20, 10))
+
+        # Matplotlib results 
+        
+        fig = Figure(figsize = (4, 3), dpi = 100)
+        t = np.arange(0, 3, .01)
+        fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+
+        fig_2 = Figure(figsize = (4, 3), dpi = 100)
+        t = np.arange(0, 3, .01)
+        fig_2.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+
+        canvas = FigureCanvasTkAgg(fig, master = self.results_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row = 1, column = 0, padx = 10, pady = (20, 10))
+
+        canvas_2 = FigureCanvasTkAgg(fig, master = self.results_frame)
+        canvas_2.draw()
+        canvas_2.get_tk_widget().grid(row = 2, column = 0, padx = 10, pady = (20, 10))
 
 if __name__ == "__main__":
     app = EUQOC_App()
