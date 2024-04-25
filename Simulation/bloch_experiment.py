@@ -33,11 +33,11 @@ def bloch_sphere_grape():
     grape_pulses = environment.run_grape_optimization(w_f = 1, w_e = 0, eps_f = 1, eps_e = 100)
     _, f_grape= environment.calculate_fidelity_reward(grape_pulses, plot_result = False)
 
+    environment.plot_bloch_sphere_trajectory()
+
     environment.plot_grape_pulses(grape_pulses)
 
     print("Fidelity is:", f_grape)
-
-    environment.plot_bloch_sphere_trajectory()
 
     total_arc_length = environment.get_total_arc_length()
 
@@ -82,6 +82,8 @@ def correlation_experiment_grape():
         arc_length_list.append(total_arc_length)
         energetic_cost_list.append(energetic_cost)
 
+    np.save("Arc_Length_EO_GRAPE.npy", arc_length_list)
+    np.save("EC_EO_GRAPE.npy", energetic_cost_list)
     plt.plot(energetic_cost_list, arc_length_list, marker = 'd', color = '#214868')
     plt.xlabel("Energetic Cost (a.u.)")
     plt.ylabel("Bloch Sphere Arc Length (a.u.)")
@@ -131,11 +133,13 @@ def correlation_experiment_rl():
     plt.show()
     """
 
-correlation_experiment_rl()
+#correlation_experiment_grape()
 
 arc_length_array = np.load("Arc_Length_Multiple_Experiments.npy")
 ec_array = np.load("EC_RL_Multiple_Experiments.npy")
 f_array = np.load("F_RL_Multiple_Experiments.npy")
+arc_length_eo_grape = np.load("Arc_Length_EO_GRAPE.npy")
+ec_eo_grape = np.load("EC_EO_GRAPE.npy")
 mean_arc_length = []
 st_dev_arc_length = []
 mean_ec = []
@@ -161,13 +165,21 @@ clb = plt.colorbar(scatter)
 norm = colors.Normalize(vmin = min(mean_f), vmax = max(mean_f))
 mapper = cm.ScalarMappable(norm = norm, cmap = "viridis")
 color = np.array([(mapper.to_rgba(v)) for v in mean_f])
+clb.set_label("Fidelity")
 
 for x, y, e_x, e_y, c in zip(mean_ec, mean_arc_length, st_dev_ec, st_dev_arc_length, color): 
-    plt.scatter(x, y, marker = 'd', color = c)
+    plt.plot(x, y, marker = 'd', color = c)
     plt.errorbar(x, y, xerr = e_x, yerr = e_y, fmt = "d", color = c)
+plt.plot(ec_eo_grape, arc_length_eo_grape, marker = "d", label = "EO-GRAPE", color = "red")
+plt.plot(mean_ec, mean_arc_length, label = "RL", color = "grey")
+
+
      
 plt.xlabel("Energetic Cost (a.u.)")
 plt.ylabel("Bloch Sphere Arc Length (a.u.)")
+plt.legend()
 plt.grid()
 plt.tight_layout()
 plt.show()
+
+
