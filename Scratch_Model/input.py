@@ -22,6 +22,12 @@ eps_f = 1
 
 eps_e = 100
 
+h_d_1_qubit = np.pi * sigmaz()
+
+h_c_1_qubit =  [sigmax(), sigmaz()]
+
+h_l_1_qubit = [r'$u_{x}$', r'$u_{z}$']
+
 H_Static_Ising = 1 * np.pi * (tensor(sigmaz(), identity(2)) + tensor(identity(2), sigmaz())) + (1/2) * np.pi * tensor(sigmaz(), sigmaz()) # Static Drift Hamiltonian 1 Inlcuding Interaction Term
 
 U_Target_CNOT = cnot()

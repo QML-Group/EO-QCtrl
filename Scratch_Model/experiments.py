@@ -17,30 +17,32 @@ This file is intended for experiments using "input.py" and "functions.py"
 
 eps_e = 100
 eps_f = 1
-weights = [0.1, 0.3, 0.6, 0.9]
-Target_Unitary = Generate_Rand_Unitary(4)
-Control_Fields = np.zeros((len(H_Control_4), Timesteps, len(weights)))
+weights = [0, 0.2, 0.5, 0.8]
+Target_Unitary = Generate_Rand_Unitary(2)
+Control_Fields = np.zeros((len(h_c_1_qubit), Timesteps, len(weights)))
 Timespace = np.linspace(0, T, Timesteps)
 
 for weight_index, weight_value in enumerate(weights):
 
-    Control_Fields[:, :, weight_index], Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(Target_Unitary, H_Static_Ising, H_Control_4, H_Labels_4,
+    Control_Fields[:, :, weight_index], Final_Unitary, Gradient_List, Fidelity, Energy = Run_GRAPE_Simulation(Target_Unitary, h_d_1_qubit, h_c_1_qubit, h_l_1_qubit,
                                                                                                         GRAPE_Iterations, Timesteps, T,
                                                                                                         1 - weight_value, weight_value,
                                                                                                         eps_f, eps_e, Return_Normalized = False)
+    print(Fidelity)
     
-fig, ax = plt.subplots(len(H_Control_4), sharex=True)
+fig, ax = plt.subplots(len(h_c_1_qubit), sharex=True)
 xticks = [0, np.pi, 2 * np.pi]
 colors = ['#03080c','#214868', '#5b97ca', '#9fc2e0']
 
-for i in range(len(H_Control_4)):
+for i in range(len(h_c_1_qubit)):
     for index_weight, value_weight in enumerate(weights):
         ax[i].plot(Timespace, Control_Fields[i, :, index_weight], label = f"$w_f$ = {round(1 - value_weight, 1)}, $w_e$ = {round(value_weight, 1)}", color = colors[index_weight])
-        ax[i].set(xlabel = "Time", ylabel = f"{H_Labels_4[i]}")
+        ax[i].set(xlabel = "Time", ylabel = f"{h_l_1_qubit[i]}")
 plt.xticks(xticks, ['0', '$\pi$', '2 $\pi$'])
 
 plt.legend()
 plt.subplot_tool()
+plt.tight_layout()
 plt.show()
 
 
@@ -170,3 +172,4 @@ fig.colorbar(surface_cost_fn, shrink=0.5, aspect=5)
 
 plt.show()
 """
+
