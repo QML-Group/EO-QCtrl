@@ -11,28 +11,17 @@ import matplotlib.pyplot as plt
 
 
 weights = [0, 0.2, 0.5, 0.8]
-target_unitary = fc.yaqq_unitary_b()
 drift_hamiltonian = h_d_1_qubit
-n_q = number_qubits
 control_hamiltonian = h_c_yaqq
 hamiltonian_label = h_l_yaqq
-initial_state_yaqq = basis(2,0)
-control_pulses = np.zeros((len(control_hamiltonian), number_of_timesteps, len(weights)))
 timespace = np.linspace(0, gate_duration, number_of_timesteps)
-
-for weight_index, weight_value in enumerate(weights):
-
-    environment = QuantumEnvironment(n_q, drift_hamiltonian, control_hamiltonian, hamiltonian_label, t1, t2, target_unitary, w_f = 1 - weight_value, w_e = weight_value, timesteps = number_of_timesteps, pulse_duration = gate_duration, grape_iterations = 200, n_steps = 1, sweep_noise = False)
-    environment.initial_state = initial_state_yaqq
-    control_pulses[:, :, weight_index] = environment.run_grape_optimization(w_f = 1 - weight_value, w_e = weight_value, eps_f = 1, eps_e = 100)
-    _, fidelity_pulse = environment.calculate_fidelity_reward(control_pulses[:, :, weight_index], plot_result = False)
-    print(fidelity_pulse)
-
-np.save("p_1_opt_500_b.npy", control_pulses)
 
 fig, ax = plt.subplots(len(control_hamiltonian), sharex = True)
 xticks = [0, np.pi, 2 * np.pi]
 colors = ['#03080c','#214868', '#5b97ca', '#9fc2e0']
+
+control_pulses = np.load("p_1_opt_500_a.npy")
+#control_pulses = np.load("p_1_opt_500_b.npy")
 
 for i in range(len(control_hamiltonian)):
     for index_weight, value_weight in enumerate(weights):
