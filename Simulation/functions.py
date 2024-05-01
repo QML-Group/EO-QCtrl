@@ -106,12 +106,12 @@ def rx_gate(theta):
     return np.array([[np.cos(theta/2), -1j * np.sin(theta/2)],
                      [-1j * np.sin(theta/2), np.cos(theta/2)]])
 
-def yaqq_unitary_1():
+def yaqq_unitary_a():
 
-    return np.array([[0.99891178 + 0j,  -0.01683013 - 0.04349723j],
+    return np.array([[-0.99891178 + 0j,  -0.01683013 - 0.04349723j],
                      [-0.0406026 + 0.02294975j, 0.7722138 + 0.63364862j]])
 
-def yaqq_unitary_2():
+def yaqq_unitary_b():
 
     return np.array([[0.54683177 + 0j, -0.52979855 - 0.64829662j],
                      [0.8231603 + 0.15291220j, 0.26287606 + 0.47950095j]])

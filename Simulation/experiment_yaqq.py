@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 weights = [0, 0.2, 0.5, 0.8]
-target_unitary = fc.yaqq_unitary_1()
+target_unitary = fc.yaqq_unitary_b()
 drift_hamiltonian = h_d_1_qubit
 n_q = number_qubits
 control_hamiltonian = h_c_yaqq
@@ -27,6 +27,8 @@ for weight_index, weight_value in enumerate(weights):
     control_pulses[:, :, weight_index] = environment.run_grape_optimization(w_f = 1 - weight_value, w_e = weight_value, eps_f = 1, eps_e = 100)
     _, fidelity_pulse = environment.calculate_fidelity_reward(control_pulses[:, :, weight_index], plot_result = False)
     print(fidelity_pulse)
+
+np.save("p_1_opt_500_b.npy", control_pulses)
 
 fig, ax = plt.subplots(len(control_hamiltonian), sharex = True)
 xticks = [0, np.pi, 2 * np.pi]
