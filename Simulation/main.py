@@ -2,8 +2,8 @@ import numpy as np
 from qutip import basis, fidelity, identity, sigmax, sigmaz, tensor, destroy
 import functions as fc
 from qutip.metrics import fidelity
-from simulator import QuantumEnvironment
-from simulator import GRAPEApproximation
+from environments import QuantumEnvironment
+from environments import GRAPEApproximation
 from qrla import QuantumRLAgent
 from qrla import GRAPEQRLAgent
 from input import *

@@ -4,7 +4,7 @@ from qutip_qip.operations import expand_operator, toffoli, snot
 from tf_agents.typing.types import NestedArraySpec
 import functions as fc
 from qutip.metrics import fidelity
-from simulator import QuantumEnvironment
+from environments import QuantumEnvironment
 import tensorflow as tf 
 from scipy.optimize import minimize 
 from keras import layers, models 
