@@ -41,5 +41,3 @@ RLAgent.plot_final_pulse()
 
 # PLot the Fidelity per iteration of the QRLAgent
 RLAgent.plot_fidelity_energy_reward_per_iteration()
-
-#
