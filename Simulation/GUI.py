@@ -8,6 +8,13 @@ import numpy as np
 import simulator as sim
 import qrla as qrla
 
+"""
+Work in progress
+----------------
+
+This file contains a GUI to initiate and run the EUQOC code
+"""
+
 class EUQOC_App(ctk.CTk):
 
     ctk.set_appearance_mode("dark")  
@@ -133,7 +140,6 @@ class EUQOC_App(ctk.CTk):
             algorithm = "None"
 
         print(algorithm)
-
 
 if __name__ == "__main__":
     app = EUQOC_App()
