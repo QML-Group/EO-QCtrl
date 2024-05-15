@@ -141,7 +141,6 @@ class EUQOC_App(ctk.CTk):
         else:
             self.algorithm = "None"
 
-
     def run_simulation(self):
 
         self.w_f = round(self.weightselect_slider_2.get(), 1)
