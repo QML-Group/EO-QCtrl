@@ -7,6 +7,8 @@ from matplotlib.figure import Figure
 import numpy as np
 import environments as env
 import qrla as qrla
+import input as input
+import functions as fc
 
 """
 Work in progress
@@ -48,7 +50,7 @@ class EUQOC_App(ctk.CTk):
         self.h_d_optionmenu.set("Drift Hamiltonian")
 
         self.h_c_optionmenu = ctk.CTkOptionMenu(self.inputparams_frame, dynamic_resizing=False,
-                                                values=["HC1", "HC2", "HC3", "HC4"], fg_color="white", text_color="green")
+                                                values=["HC1", "HC2"], fg_color="white", text_color="green")
         self.h_c_optionmenu.grid(row = 2, column = 0, padx = 20, pady = (20, 10))
         self.h_c_optionmenu.set("Control Hamiltonian")
 
@@ -96,7 +98,7 @@ class EUQOC_App(ctk.CTk):
 
         self.runbutton_frame = ctk.CTkFrame(self)
         self.runbutton_frame.grid(row = 3, column = 0, padx = (20, 0), pady = (20, 0), sticky = "nsew")
-        self.runbutton = ctk.CTkButton(self.runbutton_frame, text="Run Experiment", width = 600)
+        self.runbutton = ctk.CTkButton(self.runbutton_frame, text="Run Experiment", width = 600, command = self.run_simulation)
         
         self.runbutton.grid(column = 1)
 
@@ -128,18 +130,54 @@ class EUQOC_App(ctk.CTk):
     def buttonfunction(self):
 
         if self.eo_grape_switch.get() == 1:
-            algorithm = "EO-GRAPE"
+            self.algorithm = "EO-GRAPE"
 
         elif self.rla1_switch.get() == 1:
-            algorithm = "RLA-1"
+            self.algorithm = "RLA-1"
 
         elif self.rla2_switch.get() == 1:
-            algorithm = "RLA-2"
+            self.algorithm = "RLA-2"
 
         else:
-            algorithm = "None"
+            self.algorithm = "None"
 
-        print(algorithm)
+
+    def run_simulation(self):
+
+        self.w_f = round(self.weightselect_slider_2.get(), 1)
+        self.w_e = round(self.weightselect_slider_1.get(), 1)
+        self.algorithm = self.algorithm
+        self.target_unitary = self.u_t_optionmenu.get()
+        self.control_hamiltonian = self.h_c_optionmenu.get()
+        self.drift_hamiltonian = self.h_d_optionmenu.get()
+        self.t_1 = self.t_1_optionmenu.get() 
+        self.t_2 = self.t_1_optionmenu.get()
+        self.n_g = self.N_g_optionmenu.get()
+        self.n_t = self.N_t_optionmenu.get()
+        
+        if self.target_unitary == "CNOT":
+            self.u_t = fc.cnot()
+        
+        elif self.target_unitary == "Hadamard":
+            self.u_t = fc.hadamard()
+
+        elif self.target_unitary == "T":
+            self.u_t = fc.t_gate()
+
+        if self.control_hamiltonian == "HC1":
+            self.h_c = input.h_c_1_qubit
+
+        elif self.control_hamiltonian == "HC2":
+            self.h_c = input.h_c_3
+
+        if self.drift_hamiltonian == "HD1":
+            self.h_d = input.h_d_1_qubit
+
+        elif self.drift_hamiltonian == "HD2":
+            self.h_d = input.h_d
+        
+        print(self.w_f, self.w_e, self.algorithm, self.u_t, self.h_c, self.h_d, self.t_1, self.n_g, self.n_t)
+
 
 if __name__ == "__main__":
     app = EUQOC_App()
